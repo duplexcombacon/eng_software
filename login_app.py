@@ -3,19 +3,57 @@ from tkinter import messagebox
 from db import autenticar_utilizador 
 from app_producao_stock import iniciar_app_producao
 
-def abrir_aplicacao(perfil, login_janela):
-    login_janela.destroy() # Fecha a janela de login
-    
-    # Aqui pode chamar a sua aplicação principal
-    # Vamos usar a aplicação de "Produção" como exemplo do Dashboard Inicial (SCRUM-19)
-    
-    # NOTA: O seu projeto deve ter uma lógica aqui para mostrar o menu de acordo com o PERFIL
-    if perfil == 'admin':
-        messagebox.showinfo("Sucesso", f"Login efetuado! Perfil: {perfil}")
+def abrir_menu(perfil, login_janela):
+    # Fecha a janela de login e abre o dashboard/menu adaptado ao perfil
+    try:
+        login_janela.destroy()
+    except Exception:
         pass
-    else:
-        messagebox.showinfo("Sucesso", f"Login efetuado! Perfil: {perfil}")
 
+    dashboard = tk.Tk()
+    dashboard.title(f"Dashboard - {perfil.capitalize()}")
+    dashboard.geometry("400x250")
+
+    tk.Label(dashboard, text=f"Bem-vindo! Perfil: {perfil}", font=("Arial", 14)).pack(pady=10)
+
+    btn_frame = tk.Frame(dashboard)
+    btn_frame.pack(pady=10)
+
+    def abrir_gestao_utilizadores():
+        messagebox.showinfo("Gestão de Utilizadores", "Abrir gestão de utilizadores (POR FAZER!!!).")
+
+    def abrir_relatorios():
+        messagebox.showinfo("Relatórios", "Abrir relatórios ((POR FAZER!!!).")
+
+    def abrir_catalogo_clientes():
+        messagebox.showinfo("Catálogo", "Abrir catálogo de produtos para cliente ((POR FAZER!!!).")
+
+    def abrir_producao():
+        # Chama a aplicação de produção/stock existente
+        iniciar_app_producao(perfil)
+
+    def logout():
+        dashboard.destroy()
+        # opcional: voltar ao login
+        login()
+
+    # Botões por perfil
+    if perfil == 'admin':
+        tk.Button(btn_frame, text="Gestão de Utilizadores", width=25, command=abrir_gestao_utilizadores).pack(pady=5)
+        tk.Button(btn_frame, text="Relatórios", width=25, command=abrir_relatorios).pack(pady=5)
+        tk.Button(btn_frame, text="Produção (Stock)", width=25, command=abrir_producao).pack(pady=5)
+    elif perfil == 'gestor':
+        tk.Button(btn_frame, text="Relatórios", width=25, command=abrir_relatorios).pack(pady=5)
+        tk.Button(btn_frame, text="Produção (Stock)", width=25, command=abrir_producao).pack(pady=5)
+    elif perfil == 'cliente':
+        tk.Button(btn_frame, text="Consultar Produtos", width=25, command=abrir_catalogo_clientes).pack(pady=5)
+    else:
+        # fallback para outros perfis (ex: 'operador' antigo)
+        tk.Button(btn_frame, text="Produção (Stock)", width=25, command=abrir_producao).pack(pady=5)
+
+    tk.Button(dashboard, text="Sair / Logout", command=logout).pack(pady=10)
+
+    dashboard.mainloop()
 
 def login():
     janela = tk.Tk()
@@ -37,27 +75,12 @@ def login():
         perfil = autenticar_utilizador(user, pwd)
         
         if perfil:
-            abrir_aplicacao(perfil, janela)
+            abrir_menu(perfil, janela)
         else:
             messagebox.showerror("Erro de Login", "Username ou Palavra-passe incorretos.")
 
     tk.Button(janela, text="Login", command=verificar_login).pack(pady=10)
     janela.mainloop()
-
-def abrir_aplicacao(perfil, login_janela):
-    login_janela.destroy() # fecha a janela de login
-    
-    if perfil == 'admin':
-        messagebox.showinfo("Sucesso", f"Login efetuado! Perfil: {perfil}. A iniciar aplicação de Gestão...")
-        iniciar_app_producao(perfil) 
-    elif perfil == 'gestor':
-        messagebox.showinfo("Sucesso", f"Login efetuado! Perfil: {perfil}. A iniciar aplicação de Gestão...")
-        iniciar_app_producao(perfil) 
-    elif perfil == 'operador':
-        messagebox.showinfo("Sucesso", f"Login efetuado! Perfil: {perfil}. Acesso de operador.")
-        iniciar_app_producao(perfil)
-    else:
-        messagebox.showerror("Erro de Perfil", "Perfil de utilizador desconhecido.")
 
 if __name__ == "__main__":
     login()
