@@ -1,20 +1,20 @@
 const { sql, config } = require('../config/dbConfig');
 
-// Lógica de Login (Tarefa: Rota /login)
+// logica de login (rota /login)
 exports.login = async (req, res) => {
-    // 1. Obter username e password do corpo do pedido (JSON)
+    // obter user e pass do json
     const { username, password } = req.body;
 
-    // Validação simples
+    // validação simples
     if (!username || !password) {
         return res.status(400).json({ message: "Username e password são obrigatórios." });
     }
 
     try {
-        // 2. Conectar à BD
+        // conectar bd
         let pool = await sql.connect(config);
 
-        // 3. Consultar a BD (igual ao que fizeste em Python)
+        // consultar bd
         let result = await pool.request()
             .input('username_param', sql.VarChar, username)
             .query("SELECT Password, Perfil FROM Utilizador WHERE Username = @username_param");
@@ -25,16 +25,13 @@ exports.login = async (req, res) => {
 
         const user = result.recordset[0];
 
-        // 4. Validar a password (simples, sem hash, como no teu projeto Python)
+        // validar password (se o professor quiser podemos implementar hash mais tarde)
         if (user.Password === password) {
-            // SUCESSO!
-            // (Numa app real, criaríamos um Token JWT aqui)
             res.status(200).json({
                 message: "Login bem-sucedido!",
                 perfil: user.Perfil
             });
         } else {
-            // Password errada
             res.status(401).json({ message: "Password incorreta." });
         }
 
@@ -44,10 +41,8 @@ exports.login = async (req, res) => {
     }
 };
 
-// Lógica do Dashboard (Tarefa: Rota /dashboard)
+// logica da rota dashboard
 exports.getDashboardData = (req, res) => {
-    // (Numa app real, esta rota devia ser protegida por Token)
-    // Por agora, é apenas um exemplo de resposta.
     res.status(200).json({
         message: "Bem-vindo ao Dashboard!",
         dados: [

@@ -1,9 +1,10 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
 from db import conectar_bd
+from tkcalendar import DateEntry
 
 
-# ---------- FUNÇÃO: Gestão de Regiões ----------
+# comentário: janela para gerir as regiões (listar/inserir)
 def janela_regioes():
     janela = tk.Toplevel()
     janela.title("Gestão de Regiões")
@@ -56,6 +57,7 @@ def janela_regioes():
     btn_adicionar = tk.Button(janela, text="Adicionar Região", command=adicionar_regiao)
     btn_adicionar.pack(pady=10)
 
+# comentário: janela para gerir as castas (listar/inserir)
 # ---------- FUNÇÃO: Janela de Gestão de Castas ----------
 def janela_castas():
     janela = tk.Toplevel()
@@ -116,6 +118,7 @@ def janela_castas():
     btn_adicionar = tk.Button(janela, text="Adicionar Casta", command=adicionar_casta)
     btn_adicionar.pack(pady=10)
 
+# comentário: janela para gerir as vinhas (listar/inserir)
 # ---------- FUNÇÃO: Janela de Gestão de Vinhas ----------
 def janela_vinhas():
     janela = tk.Toplevel()
@@ -216,6 +219,7 @@ def janela_vinhas():
     btn_adicionar = tk.Button(janela, text="Adicionar Vinha", command=adicionar_vinha)
     btn_adicionar.pack(pady=10)
 
+# comentário: janela para gerir a produção de uva (listar/inserir com data)
 # ---------- FUNÇÃO: Gestão Produção de Uva ----------
 def janela_producao_uva():
     janela = tk.Toplevel()
@@ -223,9 +227,14 @@ def janela_producao_uva():
     janela.geometry("800x500")
 
     # ---------- TABELA ----------
-    tree = ttk.Treeview(janela, columns=("ID", "Ano", "Quantidade", "Vinha", "Casta"), show="headings")
-    for col in tree["columns"]:
-        tree.heading(col, text=col)
+    # Alterar a coluna 'Ano' para 'Data da Colheita'
+    tree = ttk.Treeview(janela, columns=("ID", "Data_Colheita", "Quantidade", "Vinha", "Casta"), show="headings")
+    tree.heading("ID", text="ID")
+    tree.heading("Data_Colheita", text="Data da Colheita") # <-- MUDANÇA
+    tree.heading("Quantidade", text="Quantidade (ton)")
+    tree.heading("Vinha", text="Vinha")
+    tree.heading("Casta", text="Casta")
+    
     tree.pack(pady=10, fill="both", expand=True)
 
     def carregar_producoes():
@@ -235,14 +244,24 @@ def janela_producao_uva():
         conn = conectar_bd()
         if conn:
             cursor = conn.cursor()
+            # Alterar a query para ir buscar a nova coluna
             cursor.execute("""
-                SELECT p.ID_Producao, p.Ano, p.Quantidade, v.Localizacao, c.Nome
+                SELECT p.ID_Producao, p.Data_Colheita, p.Quantidade, v.Localizacao, c.Nome
                 FROM Producao_Uva p
                 JOIN Vinha v ON p.ID_Vinha = v.ID_Vinha
                 JOIN Casta c ON p.ID_Casta = c.ID_Casta
             """)
             for linha in cursor.fetchall():
-                tree.insert("", "end", values=[str(c) for c in linha])
+                # Formatar a data (opcional, mas fica melhor)
+                linha_list = list(linha)
+                if linha_list[1]: # Se a data não for nula
+                    try:
+                        # Tenta formatar a data (pode falhar se for string)
+                        linha_list[1] = linha_list[1].strftime('%Y-%m-%d')
+                    except AttributeError:
+                        # Se já for string, deixa estar
+                        pass 
+                tree.insert("", "end", values=[str(c) for c in linha_list])
             conn.close()
 
     carregar_producoes()
@@ -251,9 +270,10 @@ def janela_producao_uva():
     frame = tk.Frame(janela)
     frame.pack(pady=10)
 
-    tk.Label(frame, text="Ano:").grid(row=0, column=0, padx=5)
-    entry_ano = tk.Entry(frame)
-    entry_ano.grid(row=0, column=1)
+    # MUDANÇA: Substituir Entry do Ano por DateEntry (Calendário)
+    tk.Label(frame, text="Data da Colheita:").grid(row=0, column=0, padx=5)
+    entry_data = DateEntry(frame, selectmode='day', date_pattern='yyyy-mm-dd') # <-- NOVA LINHA
+    entry_data.grid(row=0, column=1)
 
     tk.Label(frame, text="Quantidade (ton):").grid(row=1, column=0, padx=5)
     entry_qtd = tk.Entry(frame)
@@ -271,37 +291,36 @@ def janela_producao_uva():
         conn = conectar_bd()
         if conn:
             cursor = conn.cursor()
-
             cursor.execute("SELECT ID_Vinha, Localizacao FROM Vinha")
             vinhas = cursor.fetchall()
             combo_vinha["values"] = [f"{v[0]} - {v[1]}" for v in vinhas]
-
             cursor.execute("SELECT ID_Casta, Nome FROM Casta")
             castas = cursor.fetchall()
             combo_casta["values"] = [f"{c[0]} - {c[1]}" for c in castas]
-
             conn.close()
 
     carregar_dropdowns()
 
     def adicionar_producao():
-        ano = entry_ano.get()
+        # MUDANÇA: Ir buscar a data do calendário
+        data = entry_data.get() # <-- NOVA LINHA
         qtd = entry_qtd.get()
         vinha = combo_vinha.get().split(" - ")[0]
         casta = combo_casta.get().split(" - ")[0]
 
-        if ano and qtd and vinha and casta:
+        if data and qtd and vinha and casta: 
             conn = conectar_bd()
             if conn:
                 cursor = conn.cursor()
                 try:
+                    # MUDANÇA: Inserir Data_Colheita em vez de Ano
                     cursor.execute("""
-                        INSERT INTO Producao_Uva (Ano, Quantidade, ID_Vinha, ID_Casta)
+                        INSERT INTO Producao_Uva (Data_Colheita, Quantidade, ID_Vinha, ID_Casta)
                         VALUES (?, ?, ?, ?)
-                    """, (ano, qtd, vinha, casta))
+                    """, (data, qtd, vinha, casta)) # <-- MUDANÇA
                     conn.commit()
                     carregar_producoes()
-                    entry_ano.delete(0, tk.END)
+                    entry_data.set_date(None) # Limpa o calendário
                     entry_qtd.delete(0, tk.END)
                     combo_vinha.set("")
                     combo_casta.set("")
@@ -313,6 +332,8 @@ def janela_producao_uva():
 
     btn_adicionar = tk.Button(janela, text="Adicionar Produção", command=adicionar_producao)
     btn_adicionar.pack(pady=10)
+
+# comentário: janela para gerir vinhos e composição
 # ---------- FUNÇÃO: Gestão de Vinhos ----------
 def janela_vinhos():
     janela = tk.Toplevel()
@@ -504,6 +525,7 @@ def janela_vinhos():
     btn_adicionar.pack(pady=10)
 
 
+# comentário: janela para gerir lotes de vinho (stock)
 # ---------- FUNÇÃO: Gestão de Lotes de Vinho ----------
 def janela_lotes():
     janela = tk.Toplevel()
@@ -551,6 +573,7 @@ def janela_lotes():
             conn.close()
 
     carregar_lotes()
+
 
     # ---------- FORMULÁRIO ----------
     frame = tk.Frame(janela)
@@ -624,10 +647,107 @@ def janela_lotes():
     btn_add.pack(pady=10)
 
 
+# comentário: gerar relatório de eficiência de vinhas com filtros
+# ==========================================================
+# relatório de eficiência de vinhas
+# ==========================================================
+def janela_relatorio_eficiencia():
+    janela = tk.Toplevel()
+    janela.title("Relatório de Eficiência de Vinhas")
+    janela.geometry("900x600")
 
+    # ---------- FRAME DOS FILTROS ----------
+    frame_filtros = tk.Frame(janela)
+    frame_filtros.pack(pady=10)
+
+    tk.Label(frame_filtros, text="Filtrar por Ano (ex: 2025):").pack(side=tk.LEFT, padx=5)
+    entry_filtro_ano = tk.Entry(frame_filtros, width=10)
+    entry_filtro_ano.pack(side=tk.LEFT, padx=5)
+
+    tk.Label(frame_filtros, text="Filtrar por Mês (1-12):").pack(side=tk.LEFT, padx=5)
+    entry_filtro_mes = tk.Entry(frame_filtros, width=5)
+    entry_filtro_mes.pack(side=tk.LEFT, padx=5)
+
+    # ---------- TABELA (Treeview) ----------
+    tree = ttk.Treeview(janela, columns=("Vinha", "Area", "ProducaoTotal", "Eficiencia"), show="headings")
+    tree.heading("Vinha", text="Vinha (Localização)")
+    tree.heading("Area", text="Área (ha)")
+    tree.heading("ProducaoTotal", text="Produção Total (ton)")
+    tree.heading("Eficiencia", text="Eficiência (ton/ha)")
+    tree.pack(pady=10, fill="both", expand=True)
+
+    def carregar_relatorio():
+        for item in tree.get_children():
+            tree.delete(item)
+
+        conn = conectar_bd()
+        if conn:
+            cursor = conn.cursor()
+            
+            # A consulta SQL é a parte mais importante
+            query = """
+                SELECT 
+                    v.Localizacao,
+                    v.Area,
+                    SUM(p.Quantidade) AS ProducaoTotal
+                FROM Vinha v
+                LEFT JOIN Producao_Uva p ON v.ID_Vinha = p.ID_Vinha
+                WHERE 1=1 
+            """
+            # NOTA: Usamos LEFT JOIN para mostrar vinhas mesmo que não tenham produção
+            
+            params = []
+            
+            ano = entry_filtro_ano.get()
+            if ano:
+                query += " AND YEAR(p.Data_Colheita) = ? "
+                params.append(ano)
+                
+            mes = entry_filtro_mes.get()
+            if mes:
+                query += " AND MONTH(p.Data_Colheita) = ? "
+                params.append(mes)
+
+            query += " GROUP BY v.Localizacao, v.Area "
+            
+            try:
+                cursor.execute(query, tuple(params))
+                
+                for row in cursor.fetchall():
+                    localizacao = row[0]
+                    area_ha = row[1] if row[1] is not None else 0
+                    producao_total = row[2] if row[2] is not None else 0
+                    
+                    # Calcular Eficiência (ton/ha)
+                    eficiencia = (producao_total / area_ha) if area_ha > 0 else 0
+                    
+                    # Formatar os valores
+                    valores_finais = [
+                        localizacao,
+                        f"{area_ha:.2f} ha",
+                        f"{producao_total:.2f} ton",
+                        f"{eficiencia:.2f} ton/ha"
+                    ]
+                    
+                    tree.insert("", "end", values=valores_finais)
+                    
+            except Exception as e:
+                messagebox.showerror("Erro de Query", f"Erro ao gerar relatório: {e}")
+            finally:
+                conn.close()
+
+    # Botão para aplicar os filtros
+    btn_filtrar = tk.Button(frame_filtros, text="Filtrar / Atualizar", command=carregar_relatorio)
+    btn_filtrar.pack(side=tk.LEFT, padx=10)
+
+    # Carregar os dados iniciais (sem filtros)
+    carregar_relatorio()
+
+
+# comentário: função principal que inicia a aplicação de produção/stock
 # aplicação principal
 
-def iniciar_app_producao(perfil):
+def iniciar_app_producao():
     """Inicia a aplicação principal de Produção e Stock."""
     conn = conectar_bd() 
 
@@ -637,37 +757,40 @@ def iniciar_app_producao(perfil):
     root.config(bg="#f4f4f4")
 
     # Status da ligação
-    status_msg = f"Ligação à base de dados: OK (Perfil: {perfil})" if conn else "Erro ao ligar à base de dados!"
+    status_msg = "Ligação à base de dados: OK" if conn else "Erro ao ligar à base de dados!"
     if not conn:
         messagebox.showerror("Erro", status_msg)
 
     lbl_status = tk.Label(root, text=status_msg, font=("Arial", 12), fg="green" if conn else "red", bg="#f4f4f4")
     lbl_status.pack(pady=20)
 
-    # Botões (Menu Principal) - Código COMPLETO
+    # Botões (Menu Principal)
     frame_menu = tk.Frame(root, bg="#f4f4f4")
     frame_menu.pack(expand=True)
 
     espacamento = 12  # espaço entre botões
 
-    # Exemplo de restrição por perfil:
-    # Se o perfil for 'admin' ou 'gestor', mostra a gestão de produção.
-    if perfil in ['admin', 'gestor']:
-        tk.Button(frame_menu, text="Gerir Regiões", width=25, command=janela_regioes).pack(pady=espacamento)
-        tk.Button(frame_menu, text="Gerir Castas", width=25, command=janela_castas).pack(pady=espacamento)
-        tk.Button(frame_menu, text="Gerir Vinhas", width=25, command=janela_vinhas).pack(pady=espacamento)
-        tk.Button(frame_menu, text="Produção de Uva", width=25, command=janela_producao_uva).pack(pady=espacamento)
-        tk.Button(frame_menu, text="Gerir Vinhos", width=25, command=janela_vinhos).pack(pady=espacamento)
-        tk.Button(frame_menu, text="Lotes de Vinho", width=25, command=janela_lotes).pack(pady=espacamento)
-    else:
-        # Exemplo: Menu limitado para "operador"
-        tk.Label(frame_menu, text="Acesso Limitado", font=("Arial", 14)).pack(pady=20)
+    # ==================================================
+    # NOVO BOTÃO DE RELATÓRIO (US01)
+    # Coloquei-o no topo para o Gestor
+    tk.Button(frame_menu, text="Relatório de Eficiência", width=25, command=janela_relatorio_eficiencia, bg="#cce5ff", font=("Arial", 10, "bold")).pack(pady=espacamento)
+    # ==================================================
+
+    tk.Button(frame_menu, text="Gerir Regiões", width=25, command=janela_regioes).pack(pady=espacamento)
+    tk.Button(frame_menu, text="Gerir Castas", width=25, command=janela_castas).pack(pady=espacamento)
+    tk.Button(frame_menu, text="Gerir Vinhas", width=25, command=janela_vinhas).pack(pady=espacamento)
+    
+    # Este botão agora usa a versão atualizada
+    tk.Button(frame_menu, text="Produção de Uva", width=25, command=janela_producao_uva).pack(pady=espacamento) 
+    
+    tk.Button(frame_menu, text="Gerir Vinhos", width=25, command=janela_vinhos).pack(pady=espacamento)
+    tk.Button(frame_menu, text="Lotes de Vinho (Stock)", width=25, command=janela_lotes).pack(pady=espacamento)
 
 
     # Arranque da aplicação
     root.mainloop()
 
+
 # Este bloco SÓ é executado se o ficheiro for corrido diretamente (para testes)
 if __name__ == "__main__":
-    # Para testar, use um perfil estático
-    iniciar_app_producao('admin')
+    iniciar_app_producao()

@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox
 from datetime import date
 from db import conectar_bd  # ligar a bd
 
+# comentário: janela para gerir clientes (listar, adicionar, eliminar)
 def janela_clientes():
     janela = tk.Toplevel()
     janela.title("Gestão de Clientes")
@@ -87,8 +88,8 @@ def janela_clientes():
 
     listar_clientes()
 
+# comentário: janela para registar vendas e ver/exportar vendas
 # janela de registo de vendas
-
 def janela_vendas():
     janela = tk.Toplevel()
     janela.title("Registo de Vendas")
@@ -321,6 +322,7 @@ def janela_vendas():
 
     carregar_dropdowns()
 
+# comentário: janela para registar exportações (ligada às vendas)
 # janela de exportações
 def janela_exportacoes():
     janela = tk.Toplevel()
