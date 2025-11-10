@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WF: Dashboard Gestor (Métricas)</title>
+    <!-- Este ficheiro pode herdar do base.html, mas por agora é auto-contido -->
+    <style>
+        body { font-family: sans-serif; margin: 20px; background-color: #f0f0f0; }
+        .container { max-width: 1200px; margin: auto; background-color: white; padding: 20px; border: 1px solid #ccc; }
+        h1 { color: #333; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px; }
+        .card { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; background-color: #f9f9f9; }
+        .card-metrics { display: flex; gap: 20px; justify-content: space-between; flex-wrap: wrap; }
+        .metric-item { flex-basis: calc(33% - 20px); min-width: 200px; padding: 10px; background-color: #eee; border: 1px dashed #999; text-align: center; }
+        .chart-placeholder { height: 200px; border: 1px solid #aaa; margin-top: 10px; display: flex; justify-content: center; align-items: center; background-color: #e5e5e5; }
+        .table-simple { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .table-simple th, .table-simple td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        .table-simple th { background-color: #ddd; }
+        @media (max-width: 768px) {
+            .card-metrics { flex-direction: column; }
+            .metric-item { flex-basis: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Painel de Gestão (João Almeida - Gestor)</h1>
+
+        <!-- Secção de Filtros (US01) -->
+        <div class="card">
+            <h2>Filtros de Relatório</h2>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div>
+                    <label for="periodo">Período:</label>
+                    <select id="periodo">
+                        <option>Última Semana</option>
+                        <option>Último Mês</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="prioridade">Prioridade:</label>
+                    <select id="prioridade">
+                        <option>Todas</option>
+                        <option>Crítica</option>
+                    </select>
+                </div>
+                <button style="padding: 5px 10px; background-color: #ccc; border: 1px solid #999;">Aplicar Filtros</button>
+            </div>
+        </div>
+
+        <!-- Métricas Principais (US01) -->
+        <div class="card-metrics">
+            <div class="metric-item">
+                <p>MTTR (Tempo Médio)</p>
+                <h3>4.3 Horas</h3>
+            </div>
+            <div class="metric-item">
+                <p>Incidentes Fechados</p>
+                <h3>128</h3>
+            </div>
+            <div class="metric-item">
+                <p>Críticos Abertos</p>
+                <h3>3</h3>
+            </div>
+        </div>
+
+        <!-- Gráficos de Análise -->
+        <div class="card">
+            <h2>Análise de Tendências e Categoria</h2>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div style="flex-basis: calc(50% - 10px); min-width: 300px;">
+                    <p>Incidentes por Categoria</p>
+                    <div class="chart-placeholder">[Placeholder: Gráfico de Barras]</div>
+                </div>
+                <div style="flex-basis: calc(50% - 10px); min-width: 300px;">
+                    <p>Evolução do MTTR</p>
+                    <div class="chart-placeholder">[Placeholder: Gráfico de Linhas]</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela de Incidentes Ativos -->
+        <div class="card">
+            <h2>Incidentes Ativos Prioritários</h2>
+            <table class="table-simple">
+                <thead>
+                    <tr>
+                        <th># Ticket</th>
+                        <th>Prioridade</th>
+                        <th>Título</th>
+                        <th>Responsável</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>1025</td><td>CRÍTICA</td><td>Servidor DB Offline</td><td>Carlos P.</td><td>Em Curso</td></tr>
+                    <tr><td>1024</td><td>MÉDIA</td><td>CRM Lento</td><td>Marta F.</td><td>A Aguardar</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
