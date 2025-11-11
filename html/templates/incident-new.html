@@ -30,7 +30,6 @@
         <!-- Form Container -->
         <div class="form-container" style="max-width: 800px; margin: 0 auto;">
             <form id="incidentForm" onsubmit="submitIncident(event)">
-                
                 <div class="form-group">
                     <label for="title">Título do Incidente *</label>
                     <input type="text" id="title" name="title" required placeholder="Ex: Email não funciona">
@@ -81,12 +80,55 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../static/js/main.js"></script>
     <script>
-        function submitIncident(event) {
+        // Garante que só utilizadores autenticados acedem
+        document.addEventListener('DOMContentLoaded', () => {
+            requireAuth();
+        });
+
+        async function submitIncident(event) {
             event.preventDefault();
-            // TODO: Implementar envio dos dados
-            console.log("Incidente registado");
-            alert("Incidente registado com sucesso!");
-            window.location.href = "dashboard-tecnico.html";
+
+            const user = getCurrentUser();
+            if (!user) {
+                window.location.href = "../index.html";
+                return;
+            }
+
+            const title = document.getElementById("title").value.trim();
+            const description = document.getElementById("description").value.trim();
+            const category = document.getElementById("category").value;
+            const priority = document.getElementById("priority").value;
+
+            if (!title || !description || !category || !priority) {
+                alert("Preenche todos os campos obrigatórios.");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/incidents`, {
+                    method: "POST",
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        title,
+                        description,
+                        category,
+                        priority
+                        // Se quiseres usar affectedUsers, adiciona aqui e no backend
+                    })
+                });
+
+                if (!res.ok) {
+                    console.error("Erro ao registar incidente", res.status);
+                    alert("Erro ao registar incidente.");
+                    return;
+                }
+
+                alert("Incidente registado com sucesso!");
+                window.location.href = "dashboard-tecnico.html";
+            } catch (err) {
+                console.error(err);
+                alert("Erro no servidor.");
+            }
         }
     </script>
 </body>

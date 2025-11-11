@@ -10,16 +10,21 @@ let currentUser = null;
 // Inicialização
 // ============================================
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async () => {
     // Verificar autenticação
     currentUser = requireAuth();
     if (!currentUser) return;
 
-    // Carregar dados
-    loadData();
-    
-    // Preencher info do utilizador
+    // Preencher info do utilizador (nome, avatar, título)
     updateUserInfo();
+
+    // Carregar incidentes da API
+    try {
+        await loadData();
+    } catch (err) {
+        console.error("Erro ao carregar dados do dashboard:", err);
+        showNotification("Erro ao carregar incidentes do servidor.", "error");
+    }
 });
 
 // ============================================
@@ -27,12 +32,11 @@ document.addEventListener('DOMContentLoaded', function() {
 // ============================================
 
 async function loadData() {
-    // Carregar incidentes de teste
-    const data = await loadIncidents();
-    incidents = data.incidents;
+    const data = await loadIncidents(); // vem de main.js e chama a API real
+    incidents = Array.isArray(data.incidents) ? data.incidents : [];
     filteredIncidents = [...incidents];
 
-    // Renderizar dashboards de acordo com o rol
+    // Renderizar dashboards conforme o role
     if (currentUser.role === 'gestor') {
         renderGestorDashboard();
     } else if (currentUser.role === 'tecnico') {
@@ -41,7 +45,7 @@ async function loadData() {
         renderSysAdminDashboard();
     }
 
-    // Renderizar tabela comum
+    // Renderizar tabela
     renderIncidentsTable();
 }
 
@@ -54,9 +58,11 @@ function updateUserInfo() {
     const userName = document.getElementById('userName');
     const userRole = document.getElementById('userRole');
 
-    if (userAvatar) userAvatar.textContent = currentUser.name.charAt(0);
-    if (userName) userName.textContent = currentUser.name;
-    if (userRole) userRole.textContent = currentUser.title;
+    if (!currentUser) return;
+
+    if (userAvatar) userAvatar.textContent = currentUser.name?.charAt(0) || 'U';
+    if (userName) userName.textContent = currentUser.name || 'Utilizador';
+    if (userRole) userRole.textContent = currentUser.title || 'Perfil';
 }
 
 // ============================================
@@ -64,16 +70,21 @@ function updateUserInfo() {
 // ============================================
 
 function renderGestorDashboard() {
-    // Calcular métricas
     const metrics = calculateMetrics();
 
-    // Preencher valores
-    document.getElementById('mttrValue').textContent = metrics.mttr.toFixed(1);
-    document.getElementById('totalIncidentsValue').textContent = incidents.length;
-    document.getElementById('criticalValue').textContent = metrics.critical;
-    document.getElementById('openValue').textContent = metrics.open;
-    document.getElementById('resolvedValue').textContent = metrics.resolved;
-    document.getElementById('impactedValue').textContent = metrics.totalImpacted;
+    const mttrEl = document.getElementById('mttrValue');
+    const totalEl = document.getElementById('totalIncidentsValue');
+    const criticalEl = document.getElementById('criticalValue');
+    const openEl = document.getElementById('openValue');
+    const resolvedEl = document.getElementById('resolvedValue');
+    const impactedEl = document.getElementById('impactedValue');
+
+    if (mttrEl) mttrEl.textContent = metrics.mttr > 0 ? metrics.mttr.toFixed(1) : '0.0';
+    if (totalEl) totalEl.textContent = incidents.length;
+    if (criticalEl) criticalEl.textContent = metrics.critical;
+    if (openEl) openEl.textContent = metrics.open;
+    if (resolvedEl) resolvedEl.textContent = metrics.resolved;
+    if (impactedEl) impactedEl.textContent = metrics.totalImpacted;
 }
 
 // ============================================
@@ -81,22 +92,34 @@ function renderGestorDashboard() {
 // ============================================
 
 function renderTecnicoDashboard() {
-    // Filtrar apenas incidentes atribuídos a Marta
-    const myIncidents = incidents.filter(inc => inc.assignedTo === currentUser.name);
+    // Suporta dois formatos:
+    // - assignedTo == currentUser.name (mock antigo)
+    // - assignedToId == currentUser.id (se backend devolver)
+    const myIncidents = incidents.filter(inc => {
+        if (inc.assignedToId && currentUser.id) {
+            return inc.assignedToId === currentUser.id;
+        }
+        if (inc.assignedTo && currentUser.name) {
+            return inc.assignedTo === currentUser.name;
+        }
+        return false;
+    });
 
-    // Calcular métricas
     const myOpen = myIncidents.filter(inc => inc.status === 'Aberto').length;
     const myProgress = myIncidents.filter(inc => inc.status === 'Em Progresso').length;
     const myResolved = myIncidents.filter(inc => inc.status === 'Resolvido').length;
     const myEscalated = myIncidents.filter(inc => inc.status === 'Escalado').length;
 
-    // Preencher valores
-    document.getElementById('myOpenValue').textContent = myOpen;
-    document.getElementById('myProgressValue').textContent = myProgress;
-    document.getElementById('myResolvedValue').textContent = myResolved;
-    document.getElementById('myEscalatedValue').textContent = myEscalated;
+    const myOpenEl = document.getElementById('myOpenValue');
+    const myProgressEl = document.getElementById('myProgressValue');
+    const myResolvedEl = document.getElementById('myResolvedValue');
+    const myEscalatedEl = document.getElementById('myEscalatedValue');
 
-    // Filtrar para tabela
+    if (myOpenEl) myOpenEl.textContent = myOpen;
+    if (myProgressEl) myProgressEl.textContent = myProgress;
+    if (myResolvedEl) myResolvedEl.textContent = myResolved;
+    if (myEscalatedEl) myEscalatedEl.textContent = myEscalated;
+
     filteredIncidents = myIncidents;
 }
 
@@ -105,35 +128,45 @@ function renderTecnicoDashboard() {
 // ============================================
 
 function renderSysAdminDashboard() {
-    // Filtrar apenas incidentes escalados ou críticos
-    const escalatedIncidents = incidents.filter(inc => 
+    // Incidentes críticos ou escalados
+    const escalatedIncidents = incidents.filter(inc =>
         inc.status === 'Escalado' || inc.priority === 'Crítica'
     );
 
-    // Calcular métricas
     const critical = escalatedIncidents.filter(inc => inc.priority === 'Crítica').length;
     const high = escalatedIncidents.filter(inc => inc.priority === 'Alta').length;
     const resolved = incidents.filter(inc => inc.status === 'Resolvido').length;
-    const totalImpacted = incidents.reduce((sum, inc) => sum + inc.impact, 0);
+    const totalImpacted = incidents.reduce(
+        (sum, inc) => sum + (inc.affectedUsers || 0),
+        0
+    );
 
-    // Preencher valores
-    document.getElementById('criticalAlertsValue').textContent = critical;
-    document.getElementById('highAlertsValue').textContent = high;
-    document.getElementById('resolvedValue').textContent = resolved;
-    document.getElementById('impactedValue').textContent = totalImpacted;
+    const criticalAlertsEl = document.getElementById('criticalAlertsValue');
+    const highAlertsEl = document.getElementById('highAlertsValue');
+    const resolvedEl = document.getElementById('resolvedValue');
+    const impactedEl = document.getElementById('impactedValue');
 
-    // Mostrar alerta crítico se houver
-    const criticalIncident = incidents.find(inc => inc.priority === 'Crítica' && inc.status !== 'Resolvido');
-    if (criticalIncident) {
-        const alertDiv = document.getElementById('criticalAlert');
-        if (alertDiv) {
+    if (criticalAlertsEl) criticalAlertsEl.textContent = critical;
+    if (highAlertsEl) highAlertsEl.textContent = high;
+    if (resolvedEl) resolvedEl.textContent = resolved;
+    if (impactedEl) impactedEl.textContent = totalImpacted;
+
+    // Banner de alerta crítico, se existir
+    const criticalIncident = incidents.find(
+        inc => inc.priority === 'Crítica' && inc.status !== 'Resolvido'
+    );
+    const alertDiv = document.getElementById('criticalAlert');
+    const alertMsg = document.getElementById('criticalAlertMsg');
+
+    if (alertDiv && alertMsg) {
+        if (criticalIncident) {
             alertDiv.style.display = 'block';
-            document.getElementById('criticalAlertMsg').textContent = 
-                `${criticalIncident.title} - ${criticalIncident.id}`;
+            alertMsg.textContent = `${criticalIncident.title} - ${criticalIncident.id}`;
+        } else {
+            alertDiv.style.display = 'none';
         }
     }
 
-    // Filtrar para tabela
     filteredIncidents = escalatedIncidents;
 }
 
@@ -145,17 +178,25 @@ function calculateMetrics() {
     const critical = incidents.filter(inc => inc.priority === 'Crítica').length;
     const open = incidents.filter(inc => inc.status === 'Aberto').length;
     const resolved = incidents.filter(inc => inc.status === 'Resolvido').length;
-    const totalImpacted = incidents.reduce((sum, inc) => sum + inc.impact, 0);
 
-    // Calcular MTTR (tempo médio de resolução)
-    const resolvedIncidents = incidents.filter(inc => inc.status === 'Resolvido' && inc.resolvedAt);
+    const totalImpacted = incidents.reduce(
+        (sum, inc) => sum + (inc.affectedUsers || 0),
+        0
+    );
+
+    // MTTR: média (em horas) entre createdAt e resolvedAt
+    const resolvedIncidents = incidents.filter(
+        inc => inc.status === 'Resolvido' && inc.resolvedAt && inc.createdAt
+    );
+
     let mttr = 0;
     if (resolvedIncidents.length > 0) {
         const totalHours = resolvedIncidents.reduce((sum, inc) => {
             const created = new Date(inc.createdAt);
-            const resolved = new Date(inc.resolvedAt);
-            const hours = (resolved - created) / (1000 * 60 * 60);
-            return sum + hours;
+            const resolvedDate = new Date(inc.resolvedAt);
+            if (isNaN(created) || isNaN(resolvedDate)) return sum;
+            const hours = (resolvedDate - created) / (1000 * 60 * 60);
+            return sum + (hours > 0 ? hours : 0);
         }, 0);
         mttr = totalHours / resolvedIncidents.length;
     }
@@ -181,7 +222,7 @@ function renderIncidentsTable() {
 
     tbody.innerHTML = '';
 
-    if (filteredIncidents.length === 0) {
+    if (!filteredIncidents.length) {
         if (emptyState) emptyState.style.display = 'block';
         return;
     }
@@ -190,25 +231,39 @@ function renderIncidentsTable() {
 
     filteredIncidents.forEach(incident => {
         const row = document.createElement('tr');
-        
-        const priorityClass = incident.priority.toLowerCase().replace(' ', '-');
-        const statusClass = incident.status.toLowerCase().replace(' ', '-');
+
+        const priorityClass = (incident.priority || '')
+            .toLowerCase()
+            .replace(/\s+/g, '-');
+        const statusClass = (incident.status || '')
+            .toLowerCase()
+            .replace(/\s+/g, '-');
 
         row.innerHTML = `
             <td><strong>${incident.id}</strong></td>
-            <td>${incident.title}</td>
-            <td>${incident.category}</td>
-            <td><span class="priority-badge ${priorityClass}">${incident.priority}</span></td>
-            <td><span class="status-badge ${statusClass}">${incident.status}</span></td>
-            <td>${incident.impact}</td>
-            <td>${incident.assignedTo}</td>
+            <td>${incident.title || '-'}</td>
+            <td>${incident.category || '-'}</td>
             <td>
-                <a href="#" class="btn-action" onclick="viewIncident('${incident.id}', event)" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                <span class="priority-badge ${priorityClass}">
+                    ${incident.priority || '-'}
+                </span>
+            </td>
+            <td>
+                <span class="status-badge ${statusClass}">
+                    ${incident.status || '-'}
+                </span>
+            </td>
+            <td>${incident.affectedUsers != null ? incident.affectedUsers : '-'}</td>
+            <td>${incident.assignedTo || '-'}</td>
+            <td>
+                <a href="#" class="btn-action"
+                   onclick="viewIncident('${incident.id}', event)"
+                   style="color: #667eea; text-decoration: none; font-weight: 600;">
                     Ver
                 </a>
             </td>
         `;
-        
+
         tbody.appendChild(row);
     });
 }
@@ -220,25 +275,20 @@ function renderIncidentsTable() {
 function applyFilters() {
     filteredIncidents = [...incidents];
 
-    // Filtros do Gestor
     const filterPeriod = document.getElementById('filterPeriod');
     const filterCategory = document.getElementById('filterCategory');
     const filterPriority = document.getElementById('filterPriority');
-
-    // Filtros do Técnico
     const filterStatus = document.getElementById('filterStatus');
-
-    // Filtros do SysAdmin
     const filterSeverity = document.getElementById('filterSeverity');
     const filterType = document.getElementById('filterType');
 
-    // Aplicar filtro de período (Gestor)
+    // Período
     if (filterPeriod && filterPeriod.value) {
         const period = filterPeriod.value;
         const now = new Date();
-        let startDate = new Date();
+        const startDate = new Date(now);
 
-        switch(period) {
+        switch (period) {
             case 'week':
                 startDate.setDate(now.getDate() - 7);
                 break;
@@ -253,43 +303,40 @@ function applyFilters() {
                 break;
         }
 
-        filteredIncidents = filteredIncidents.filter(inc => 
-            new Date(inc.createdAt) >= startDate
-        );
+        filteredIncidents = filteredIncidents.filter(inc => {
+            if (!inc.createdAt) return false;
+            const created = new Date(inc.createdAt);
+            return !isNaN(created) && created >= startDate;
+        });
     }
 
-    // Aplicar filtro de categoria
     if (filterCategory && filterCategory.value) {
-        filteredIncidents = filteredIncidents.filter(inc => 
-            inc.category === filterCategory.value
+        filteredIncidents = filteredIncidents.filter(
+            inc => inc.category === filterCategory.value
         );
     }
 
-    // Aplicar filtro de prioridade
     if (filterPriority && filterPriority.value) {
-        filteredIncidents = filteredIncidents.filter(inc => 
-            inc.priority === filterPriority.value
+        filteredIncidents = filteredIncidents.filter(
+            inc => inc.priority === filterPriority.value
         );
     }
 
-    // Aplicar filtro de status
     if (filterStatus && filterStatus.value) {
-        filteredIncidents = filteredIncidents.filter(inc => 
-            inc.status === filterStatus.value
+        filteredIncidents = filteredIncidents.filter(
+            inc => inc.status === filterStatus.value
         );
     }
 
-    // Aplicar filtro de severidade (SysAdmin)
     if (filterSeverity && filterSeverity.value) {
-        filteredIncidents = filteredIncidents.filter(inc => 
-            inc.priority === filterSeverity.value
+        filteredIncidents = filteredIncidents.filter(
+            inc => inc.priority === filterSeverity.value
         );
     }
 
-    // Aplicar filtro de tipo (SysAdmin)
     if (filterType && filterType.value) {
-        filteredIncidents = filteredIncidents.filter(inc => 
-            inc.category === filterType.value
+        filteredIncidents = filteredIncidents.filter(
+            inc => inc.category === filterType.value
         );
     }
 
@@ -297,27 +344,33 @@ function applyFilters() {
 }
 
 function resetFilters() {
-    // Limpar todos os filtros
-    const filterPeriod = document.getElementById('filterPeriod');
-    const filterCategory = document.getElementById('filterCategory');
-    const filterPriority = document.getElementById('filterPriority');
-    const filterStatus = document.getElementById('filterStatus');
-    const filterSeverity = document.getElementById('filterSeverity');
-    const filterType = document.getElementById('filterType');
+    const ids = [
+        'filterPeriod',
+        'filterCategory',
+        'filterPriority',
+        'filterStatus',
+        'filterSeverity',
+        'filterType'
+    ];
 
-    if (filterPeriod) filterPeriod.value = '';
-    if (filterCategory) filterCategory.value = '';
-    if (filterPriority) filterPriority.value = '';
-    if (filterStatus) filterStatus.value = '';
-    if (filterSeverity) filterSeverity.value = '';
-    if (filterType) filterType.value = '';
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
 
-    // Resetar incidentes filtrados
     if (currentUser.role === 'tecnico') {
-        filteredIncidents = incidents.filter(inc => inc.assignedTo === currentUser.name);
+        filteredIncidents = incidents.filter(inc => {
+            if (inc.assignedToId && currentUser.id) {
+                return inc.assignedToId === currentUser.id;
+            }
+            if (inc.assignedTo && currentUser.name) {
+                return inc.assignedTo === currentUser.name;
+            }
+            return false;
+        });
     } else if (currentUser.role === 'sysadmin') {
-        filteredIncidents = incidents.filter(inc => 
-            inc.status === 'Escalado' || inc.priority === 'Crítica'
+        filteredIncidents = incidents.filter(
+            inc => inc.status === 'Escalado' || inc.priority === 'Crítica'
         );
     } else {
         filteredIncidents = [...incidents];
@@ -331,28 +384,28 @@ function resetFilters() {
 // ============================================
 
 function viewIncident(id, event) {
-    event.preventDefault();
-    const incident = incidents.find(inc => inc.id === id);
-    
-    if (incident) {
-        // Mostrar notificação
-        showNotification(`A visualizar: ${incident.title}`, 'info');
-        
-        // Aqui poderia redirecionar para página de detalhe
-        console.log('Incidente:', incident);
+    if (event) event.preventDefault();
+
+    const incident = incidents.find(inc => String(inc.id) === String(id));
+    if (!incident) {
+        showNotification("Incidente não encontrado.", "error");
+        return;
     }
+
+    showNotification(`A visualizar: ${incident.title}`, "info");
+    console.log("Incidente:", incident);
 }
 
+// Notificação simples
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
     notification.textContent = message;
-    
+
     document.body.appendChild(notification);
-    
-    // Auto-remover após 4 segundos
+
     setTimeout(() => {
         notification.style.animation = 'slideOutRight 0.3s ease-out';
         setTimeout(() => notification.remove(), 300);
-    }, 4000);
+    }, 3000);
 }

@@ -15,7 +15,8 @@
             <h2 class="navbar-brand">🚨 Gestor de Incidentes</h2>
             <div class="navbar-menu">
                 <a href="#" class="active">Dashboard</a>
-                <a href="incident-list.html">Incidentes</a>
+                <!-- Ajusta para o nome correto do ficheiro de lista de incidentes -->
+                <a href="incident_list.html">Incidentes</a>
                 <a href="reports.html">Relatórios</a>
             </div>
         </div>
@@ -26,12 +27,14 @@
         <div class="dashboard-header">
             <div>
                 <h1>Dashboard do Gestor</h1>
-                <p style="color: #7f8c8d; margin: 0;">Monitorização de Incidentes e Métricas de Desempenho</p>
+                <p style="color: #7f8c8d; margin: 0;">
+                    Monitorização de Incidentes e Métricas de Desempenho
+                </p>
             </div>
             <div class="user-info">
-                <div class="avatar" id="userAvatar">J</div>
+                <div class="avatar" id="userAvatar">G</div>
                 <div class="user-details">
-                    <p class="user-name" id="userName">João Almeida</p>
+                    <p class="user-name" id="userName">Gestor</p>
                     <p class="user-role" id="userRole">Gestor de IT</p>
                 </div>
                 <button class="logout-btn" onclick="logout()">Sair</button>
@@ -45,6 +48,7 @@
                 <div class="filter-item">
                     <label for="filterPeriod">Período:</label>
                     <select id="filterPeriod">
+                        <option value="">Todos</option>
                         <option value="week">Semana Atual</option>
                         <option value="month">Mês Atual</option>
                         <option value="quarter">Trimestre</option>
@@ -80,58 +84,58 @@
             </div>
         </div>
 
-        <!-- Métricas Principais -->
+        <!-- Métricas Principais (valores iniciais serão substituídos pelo JS) -->
         <div class="metrics-grid">
             <div class="metric-card mttr">
                 <p class="metric-label">⏱️ Tempo Médio de Resolução</p>
-                <p class="metric-value" id="mttrValue">2.5</p>
+                <p class="metric-value" id="mttrValue">0.0</p>
                 <p class="metric-unit">horas</p>
-                <p class="metric-change positive">↓ 5% face ao mês anterior</p>
+                <p class="metric-change">Atualizado com dados reais</p>
             </div>
 
             <div class="metric-card total">
                 <p class="metric-label">📊 Total de Incidentes</p>
-                <p class="metric-value" id="totalIncidentsValue">6</p>
-                <p class="metric-unit">este mês</p>
-                <p class="metric-change positive">↑ 12% face ao mês anterior</p>
+                <p class="metric-value" id="totalIncidentsValue">0</p>
+                <p class="metric-unit">registados</p>
+                <p class="metric-change">Com base na base de dados</p>
             </div>
 
             <div class="metric-card critical">
                 <p class="metric-label">🔴 Incidentes Críticos</p>
-                <p class="metric-value" id="criticalValue">2</p>
+                <p class="metric-value" id="criticalValue">0</p>
                 <p class="metric-unit">abertos</p>
-                <p class="metric-change negative">↑ 100% face ao mês anterior</p>
+                <p class="metric-change">Monitorização contínua</p>
             </div>
 
             <div class="metric-card open">
                 <p class="metric-label">📋 Abertos</p>
-                <p class="metric-value" id="openValue">2</p>
-                <p class="metric-unit">aguardando ação</p>
-                <p class="metric-change">Atualizado agora</p>
+                <p class="metric-value" id="openValue">0</p>
+                <p class="metric-unit">em progresso</p>
+                <p class="metric-change">Estado em tempo quase real</p>
             </div>
 
             <div class="metric-card resolved">
                 <p class="metric-label">✅ Resolvidos</p>
-                <p class="metric-value" id="resolvedValue">1</p>
-                <p class="metric-unit">este mês</p>
-                <p class="metric-change positive">↑ 20% face ao mês anterior</p>
+                <p class="metric-value" id="resolvedValue">0</p>
+                <p class="metric-unit">no período</p>
+                <p class="metric-change">Indicador de eficácia</p>
             </div>
 
             <div class="metric-card">
                 <p class="metric-label">👥 Utilizadores Afetados</p>
-                <p class="metric-value" id="impactedValue">79</p>
+                <p class="metric-value" id="impactedValue">0</p>
                 <p class="metric-unit">total</p>
-                <p class="metric-change">3 incidentes críticos</p>
+                <p class="metric-change">Calculado a partir dos incidentes</p>
             </div>
         </div>
 
-        <!-- Gráficos -->
+        <!-- Gráficos (placeholders, ligados aos dados se quiserem depois) -->
         <div class="charts-grid">
             <div class="chart-container">
                 <h3 class="chart-title">📈 Incidentes por Prioridade</h3>
                 <div class="placeholder-chart">
                     Gráfico: Distribuição por Prioridade
-                    <br>(Chart.js / Canvas)
+                    <br>(pode ser ligado à API futuramente)
                 </div>
             </div>
 
@@ -139,7 +143,6 @@
                 <h3 class="chart-title">🏷️ Incidentes por Categoria</h3>
                 <div class="placeholder-chart">
                     Gráfico: Distribuição por Categoria
-                    <br>(Chart.js / Canvas)
                 </div>
             </div>
 
@@ -147,7 +150,6 @@
                 <h3 class="chart-title">📊 Incidentes por Status</h3>
                 <div class="placeholder-chart">
                     Gráfico: Distribuição por Status
-                    <br>(Chart.js / Canvas)
                 </div>
             </div>
 
@@ -155,7 +157,6 @@
                 <h3 class="chart-title">⏳ Evolução do MTTR</h3>
                 <div class="placeholder-chart">
                     Gráfico: Tendência de MTTR
-                    <br>(Chart.js / Canvas)
                 </div>
             </div>
         </div>
@@ -178,17 +179,19 @@
                         </tr>
                     </thead>
                     <tbody id="incidentsTableBody">
-                        <!-- Preenchido por JavaScript -->
+                        <!-- Preenchido por dashboard.js com dados da API -->
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Empty State (se não houver incidentes) -->
+        <!-- Empty State -->
         <div id="emptyState" class="empty-state" style="display: none;">
             <div class="empty-state-icon">✅</div>
             <h3 class="empty-state-title">Sem Incidentes</h3>
-            <p class="empty-state-text">Não há incidentes com os filtros aplicados. Excelente trabalho da equipa!</p>
+            <p class="empty-state-text">
+                Não há incidentes com os filtros aplicados. Excelente trabalho da equipa!
+            </p>
         </div>
     </div>
 

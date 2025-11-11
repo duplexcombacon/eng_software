@@ -1,16 +1,16 @@
-import { Router } from "express";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-import { poolPromise, sql } from "../db.js";
+// server/routes/auth.js
+const express = require("express");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const { poolPromise, sql } = require("../db");
+require("dotenv").config();
 
-dotenv.config();
-const router = Router();
+const router = express.Router();
 
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password)
-    return res.status(400).json({ message: "Email and password required" });
+    return res.status(400).json({ message: "Email e password obrigatórios" });
 
   try {
     const pool = await poolPromise;
@@ -20,16 +20,17 @@ router.post("/login", async (req, res) => {
       .query("SELECT TOP 1 * FROM Users WHERE email = @email");
 
     const user = result.recordset[0];
-    if (!user) return res.status(401).json({ message: "Invalid credentials" });
+    if (!user) return res.status(401).json({ message: "Credenciais inválidas" });
 
-    const match = await bcrypt.compare(password, user.passwordHash);
-    if (!match) return res.status(401).json({ message: "Invalid credentials" });
+    const ok = await bcrypt.compare(password, user.passwordHash);
+    if (!ok) return res.status(401).json({ message: "Credenciais inválidas" });
 
     const token = jwt.sign(
       {
         id: user.id,
         name: user.name,
-        role: user.role
+        role: user.role,
+        title: user.title
       },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES || "8h" }
@@ -40,13 +41,14 @@ router.post("/login", async (req, res) => {
       user: {
         id: user.id,
         name: user.name,
-        role: user.role
+        role: user.role,
+        title: user.title
       }
     });
   } catch (err) {
     console.error("Login error:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Erro no servidor" });
   }
 });
 
-export default router;
+module.exports = router;

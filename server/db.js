@@ -1,6 +1,5 @@
-import sql from "mssql";
-import dotenv from "dotenv";
-dotenv.config();
+const sql = require("mssql");
+require("dotenv").config();
 
 const dbConfig = {
   user: process.env.DB_USER,
@@ -13,15 +12,15 @@ const dbConfig = {
   }
 };
 
-export const poolPromise = new sql.ConnectionPool(dbConfig)
+const poolPromise = new sql.ConnectionPool(dbConfig)
   .connect()
   .then(pool => {
-    console.log("✅ Connected to SQL Server");
+    console.log("✅ Ligado ao SQL Server");
     return pool;
   })
   .catch(err => {
-    console.error("❌ DB Connection Failed:", err);
+    console.error("❌ Erro na ligação à BD", err);
     throw err;
   });
 
-export { sql };
+module.exports = { sql, poolPromise };
