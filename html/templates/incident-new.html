@@ -98,9 +98,12 @@
             const description = document.getElementById("description").value.trim();
             const category = document.getElementById("category").value;
             const priority = document.getElementById("priority").value;
+            const affectedUsersValue = document.getElementById("affectedUsers").value;
 
-            if (!title || !description || !category || !priority) {
-                alert("Preenche todos os campos obrigatórios.");
+            const affectedUsers = parseInt(affectedUsersValue, 10);
+
+            if (!title || !description || !category || !priority || !affectedUsers || affectedUsers < 1) {
+                alert("Preenche todos os campos obrigatórios com valores válidos.");
                 return;
             }
 
@@ -112,8 +115,8 @@
                         title,
                         description,
                         category,
-                        priority
-                        // Se quiseres usar affectedUsers, adiciona aqui e no backend
+                        priority,
+                        affectedUsers
                     })
                 });
 
@@ -123,10 +126,13 @@
                     return;
                 }
 
+                const data = await res.json();
+                console.log("Incidente criado:", data);
+
                 alert("Incidente registado com sucesso!");
                 window.location.href = "dashboard-tecnico.html";
             } catch (err) {
-                console.error(err);
+                console.error("Erro no servidor:", err);
                 alert("Erro no servidor.");
             }
         }
