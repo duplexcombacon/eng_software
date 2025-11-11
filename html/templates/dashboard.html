@@ -3,100 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WF: Dashboard Gestor (Métricas)</title>
-    <!-- Este ficheiro pode herdar do base.html, mas por agora é auto-contido -->
+    <title>Wireframe: Dashboard de Incidentes (Gestor)</title>
+    <!-- Carrega Bootstrap 5.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <style>
-        body { font-family: sans-serif; margin: 20px; background-color: #f0f0f0; }
-        .container { max-width: 1200px; margin: auto; background-color: white; padding: 20px; border: 1px solid #ccc; }
-        h1 { color: #333; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px; }
-        .card { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; background-color: #f9f9f9; }
-        .card-metrics { display: flex; gap: 20px; justify-content: space-between; flex-wrap: wrap; }
-        .metric-item { flex-basis: calc(33% - 20px); min-width: 200px; padding: 10px; background-color: #eee; border: 1px dashed #999; text-align: center; }
-        .chart-placeholder { height: 200px; border: 1px solid #aaa; margin-top: 10px; display: flex; justify-content: center; align-items: center; background-color: #e5e5e5; }
-        .table-simple { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .table-simple th, .table-simple td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        .table-simple th { background-color: #ddd; }
-        @media (max-width: 768px) {
-            .card-metrics { flex-direction: column; }
-            .metric-item { flex-basis: 100%; }
-        }
+        body { background-color: #f4f7f9; }
+        .card-metric { border-left: 5px solid; border-radius: 0.5rem; }
+        .card-metric.mttr { border-color: #0d6efd; }
+        .card-metric.total { border-color: #ffc107; }
+        .card-metric.critical { border-color: #dc3545; }
+        .placeholder-chart { height: 250px; background-color: #e9ecef; color: #6c757d; display: flex; align-items: center; justify-content: center; border-radius: 0.25rem; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Painel de Gestão (João Almeida - Gestor)</h1>
-
-        <!-- Secção de Filtros (US01) -->
-        <div class="card">
-            <h2>Filtros de Relatório</h2>
-            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <div>
-                    <label for="periodo">Período:</label>
-                    <select id="periodo">
-                        <option>Última Semana</option>
-                        <option>Último Mês</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="prioridade">Prioridade:</label>
-                    <select id="prioridade">
-                        <option>Todas</option>
-                        <option>Crítica</option>
-                    </select>
-                </div>
-                <button style="padding: 5px 10px; background-color: #ccc; border: 1px solid #999;">Aplicar Filtros</button>
+    <div class="container mt-4">
+        <h1 class="mb-4 text-primary">Painel de Gestão de Incidentes (João Almeida)</h1>
+        
+        <!-- Filtros (US01) -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Filtros de Relatório</h5>
             </div>
-        </div>
-
-        <!-- Métricas Principais (US01) -->
-        <div class="card-metrics">
-            <div class="metric-item">
-                <p>MTTR (Tempo Médio)</p>
-                <h3>4.3 Horas</h3>
-            </div>
-            <div class="metric-item">
-                <p>Incidentes Fechados</p>
-                <h3>128</h3>
-            </div>
-            <div class="metric-item">
-                <p>Críticos Abertos</p>
-                <h3>3</h3>
-            </div>
-        </div>
-
-        <!-- Gráficos de Análise -->
-        <div class="card">
-            <h2>Análise de Tendências e Categoria</h2>
-            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                <div style="flex-basis: calc(50% - 10px); min-width: 300px;">
-                    <p>Incidentes por Categoria</p>
-                    <div class="chart-placeholder">[Placeholder: Gráfico de Barras]</div>
-                </div>
-                <div style="flex-basis: calc(50% - 10px); min-width: 300px;">
-                    <p>Evolução do MTTR</p>
-                    <div class="chart-placeholder">[Placeholder: Gráfico de Linhas]</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="filter-period" class="form-label">Período</label>
+                        <select id="filter-period" class="form-select">
+                            <option>Última Semana</option>
+                            <option>Último Mês</option>
+                            <option>Último Trimestre</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="filter-priority" class="form-label">Prioridade</label>
+                        <select id="filter-priority" class="form-select">
+                            <option>Todas</option>
+                            <option>Crítica</option>
+                            <option>Alta</option>
+                            <option>Média</option>
+                            <option>Baixa</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button class="btn btn-primary w-100">Aplicar Filtros</button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Tabela de Incidentes Ativos -->
-        <div class="card">
-            <h2>Incidentes Ativos Prioritários</h2>
-            <table class="table-simple">
-                <thead>
-                    <tr>
-                        <th># Ticket</th>
-                        <th>Prioridade</th>
-                        <th>Título</th>
-                        <th>Responsável</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td>1025</td><td>CRÍTICA</td><td>Servidor DB Offline</td><td>Carlos P.</td><td>Em Curso</td></tr>
-                    <tr><td>1024</td><td>MÉDIA</td><td>CRM Lento</td><td>Marta F.</td><td>A Aguardar</td></tr>
-                </tbody>
-            </table>
+        <!-- Cartões de Métricas (Key Performance Indicators - US01) -->
+        <div class="row mb-4">
+            
+            <!-- MTTR (Mean Time to Resolution) -->
+            <div class="col-md-4 mb-3">
+                <div class="card card-metric mttr shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-secondary fw-bold text-uppercase mb-1">MTTR (Tempo Médio de Resolução)</div>
+                        <div class="h3 mb-0 text-dark">4.3 Horas</div>
+                        <small class="text-success">+5% em relação ao mês passado</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total de Incidentes Fechados -->
+            <div class="col-md-4 mb-3">
+                <div class="card card-metric total shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-secondary fw-bold text-uppercase mb-1">Incidentes Fechados</div>
+                        <div class="h3 mb-0 text-dark">128</div>
+                        <small class="text-danger">-12% em relação ao mês passado</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Incidentes Críticos Abertos -->
+            <div class="col-md-4 mb-3">
+                <div class="card card-metric critical shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-secondary fw-bold text-uppercase mb-1">Incidentes Críticos Abertos</div>
+                        <div class="h3 mb-0 text-dark">3</div>
+                        <small class="text-danger">Ação Imediata Necessária</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráficos (Placeholder para visualização de dados) -->
+        <div class="row mb-4">
+            
+            <!-- Gráfico 1: Incidentes por Categoria/Tipo (US01) -->
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white fw-bold">Incidentes por Categoria (Top 5)</div>
+                    <div class="card-body">
+                        <div class="placeholder-chart">Gráfico de Barras / Donut Chart</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfico 2: Evolução do MTTR ao Longo do Tempo -->
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white fw-bold">Evolução do MTTR (Tendência Semanal)</div>
+                    <div class="card-body">
+                        <div class="placeholder-chart">Gráfico de Linhas (MTTR em Horas)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela de Incidentes Recentes (Visão Rápida) -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white fw-bold">Incidentes Ativos Prioritários</div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th># Ticket</th>
+                                <th>Prioridade</th>
+                                <th>Título</th>
+                                <th>Categoria</th>
+                                <th>Responsável</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1025</td>
+                                <td><span class="badge bg-danger">Crítica</span></td>
+                                <td>Servidor DB Principal Offline (Alerta Nagios)</td>
+                                <td>Infraestrutura</td>
+                                <td>Carlos Pinto</td>
+                                <td>Em Curso</td>
+                            </tr>
+                            <tr>
+                                <td>1024</td>
+                                <td><span class="badge bg-warning text-dark">Média</span></td>
+                                <td>Software CRM Lento</td>
+                                <td>Software</td>
+                                <td>Equipa de Software</td>
+                                <td>Aguardando Informação</td>
+                            </tr>
+                            <tr>
+                                <td>1022</td>
+                                <td><span class="badge bg-success">Baixa</span></td>
+                                <td>Erro de Impressão Sala 301</td>
+                                <td>Hardware</td>
+                                <td>Marta Ferreira</td>
+                                <td>Novo</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </body>

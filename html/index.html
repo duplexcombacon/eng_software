@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Incidentes - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="static/css/index.css">
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>Gestor de Incidentes</h1>
+                <p>Sistema de Gestão de Incidentes Corporativo</p>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input 
+                        type="email" 
+                        class="form-control" 
+                        id="email" 
+                        name="email"
+                        placeholder="seu.email@empresa.pt" 
+                        required
+                        autocomplete="email"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input 
+                        type="password" 
+                        class="form-control" 
+                        id="password" 
+                        name="password"
+                        placeholder="Introduza a sua senha" 
+                        required
+                        autocomplete="current-password"
+                    >
+                </div>
+
+                <div class="remember-forgot">
+                    <div class="form-check">
+                        <input 
+                            type="checkbox" 
+                            class="form-check-input" 
+                            id="rememberMe" 
+                            name="rememberMe"
+                        >
+                        <label class="form-check-label" for="rememberMe">
+                            Lembrar-me
+                        </label>
+                    </div>
+                    <a href="#forgot-password" class="forgot-link">Esqueceu a senha?</a>
+                </div>
+
+                <button type="submit" class="btn-login" id="loginBtn">
+                    <span class="loading-spinner" id="spinner">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    </span>
+                    <span id="btnText">Entrar</span>
+                </button>
+            </form>
+
+            <div class="divider">
+                <span>OU</span>
+            </div>
+
+            <div class="login-footer">
+                <p style="margin: 0; margin-bottom: 15px;">Não tem conta?</p>
+                <a href="templates/register.html">Criar uma nova conta</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Dados de utilizadores (temporário - será substituído por Firebase)
+        const USERS = [
+            {
+                id: 1,
+                name: "João Almeida",
+                email: "joao.almeida@empresa.pt",
+                password: "senha123",
+                role: "gestor",
+                title: "Gestor de IT (Administrator)"
+            },
+            {
+                id: 2,
+                name: "Marta Ferreira",
+                email: "marta.ferreira@empresa.pt",
+                password: "senha123",
+                role: "tecnico",
+                title: "Técnica de Suporte (Helpdesk Nível 1)"
+            },
+            {
+                id: 3,
+                name: "Carlos Pinto",
+                email: "carlos.pinto@empresa.pt",
+                password: "senha123",
+                role: "sysadmin",
+                title: "Administrador de Sistemas (SysAdmin)"
+            }
+        ];
+
+        // Autenticação
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+            const loginBtn = document.getElementById('loginBtn');
+            const spinner = document.getElementById('spinner');
+            const btnText = document.getElementById('btnText');
+            const alertContainer = document.getElementById('alertContainer');
+
+            // Limpar alertas anteriores
+            alertContainer.innerHTML = '';
+
+            // Validação básica
+            if (!email || !password) {
+                showAlert('Por favor, preencha todos os campos.', 'danger');
+                return;
+            }
+
+            // Desabilitar botão e mostrar loading
+            loginBtn.disabled = true;
+            spinner.style.display = 'inline-block';
+            btnText.textContent = 'A entrar...';
+
+            try {
+                // Simular chamada ao servidor
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                // Validar utilizador
+                const user = USERS.find(u => u.email === email && u.password === password);
+
+                if (user) {
+                    // Guardar dados do utilizador
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+
+                    // Guardar email se "Lembrar-me" está marcado
+                    if (rememberMe) {
+                        localStorage.setItem('userEmail', email);
+                    } else {
+                        localStorage.removeItem('userEmail');
+                    }
+
+                    showAlert('Login bem-sucedido! Redirecionando...', 'success');
+                    
+                    // Redirecionar para dashboard apropriado baseado no role
+                    let dashboardUrl = 'templates/dashboard.html';
+                    if (user.role === 'gestor') {
+                        dashboardUrl = 'templates/dashboard-gestor.html';
+                    } else if (user.role === 'tecnico') {
+                        dashboardUrl = 'templates/dashboard-tecnico.html';
+                    } else if (user.role === 'sysadmin') {
+                        dashboardUrl = 'templates/dashboard-sysadmin.html';
+                    }
+                    
+                    setTimeout(() => {
+                        window.location.href = dashboardUrl;
+                    }, 1500);
+                } else {
+                    showAlert('Email ou senha inválidos.', 'danger');
+                    loginBtn.disabled = false;
+                    spinner.style.display = 'none';
+                    btnText.textContent = 'Entrar';
+                }
+            } catch (error) {
+                showAlert('Erro ao conectar. Tente novamente.', 'danger');
+                loginBtn.disabled = false;
+                spinner.style.display = 'none';
+                btnText.textContent = 'Entrar';
+                console.error('Erro:', error);
+            }
+        });
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.setAttribute('role', 'alert');
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+            `;
+            alertContainer.appendChild(alert);
+
+            // Auto-remover após 5 segundos
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        // Carregar email gravado se existir
+        window.addEventListener('load', () => {
+            const savedEmail = localStorage.getItem('userEmail');
+            if (savedEmail) {
+                document.getElementById('email').value = savedEmail;
+                document.getElementById('rememberMe').checked = true;
+            }
+        });
+
+        // Focus no primeiro campo
+        document.getElementById('email').focus();
+    </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+[
+  {
+    "id": 1,
+    "name": "João Almeida",
+    "email": "joao.almeida@empresa.pt",
+    "password": "senha123",
+    "role": "gestor",
+    "title": "Gestor de IT (Administrator)",
+    "age": 45,
+    "objective": "Monitorizar a estabilidade dos sistemas e a eficiência da equipa de suporte, garantindo que os incidentes críticos são resolvidos rapidamente.",
+    "frustration": "Recebo incidentes por email, chat e telefonemas. Não consigo ter métricas fiáveis. Não sei qual o nosso tempo médio de resolução (MTTR), nem quais os sistemas que falham mais. Isto impede-me de saber onde devo alocar mais recursos ou formação."
+  },
+  {
+    "id": 2,
+    "name": "Marta Ferreira",
+    "email": "marta.ferreira@empresa.pt",
+    "password": "senha123",
+    "role": "tecnico",
+    "title": "Técnica de Suporte (Helpdesk Nível 1)",
+    "age": 32,
+    "objective": "Registar, categorizar e resolver incidentes de Nível 1 de forma eficiente, para garantir que os utilizadores voltam a trabalhar o mais rápido possível e que os incidentes complexos são escalados para a equipa correta.",
+    "frustration": "Uso um ficheiro Excel partilhado para gerir os pedidos. É caótico. É fácil esquecer-me de um pedido, não há forma de priorizar o que é urgente, e depois tenho de enviar um email manual à equipa de 'Redes' ou 'Software'. Isto atrasa a resolução e o João (Gestor) nunca sabe o estado real de um incidente."
+  },
+  {
+    "id": 3,
+    "name": "Carlos Pinto",
+    "email": "carlos.pinto@empresa.pt",
+    "password": "senha123",
+    "role": "sysadmin",
+    "title": "Administrador de Sistemas (SysAdmin / Nível 2)",
+    "age": 38,
+    "objective": "Receber alertas de infraestrutura de forma centralizada e resolver incidentes complexos que a Nível 1 (Marta) não consegue.",
+    "frustration": "As nossas ferramentas de monitorização (como o Nagios) enviam dezenas de alertas por email, que se misturam com os pedidos da Marta. Já me aconteceu um servidor crítico estar 'offline' e eu só descobrir quando os utilizadores começam a ligar, porque o alerta inicial não foi devidamente escalado ou priorizado."
+  }
+]

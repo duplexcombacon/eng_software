@@ -1,0 +1,105 @@
+{
+  "incidents": [
+    {
+      "id": "INC-001",
+      "title": "Email não funciona - Utilizador João Silva",
+      "description": "Utilizador não consegue aceder ao email corporativo.",
+      "category": "Email/Comunicações",
+      "priority": "Alta",
+      "status": "Aberto",
+      "createdAt": "2025-11-10T09:30:00Z",
+      "assignedTo": "Marta Ferreira",
+      "impact": 1
+    },
+    {
+      "id": "INC-002",
+      "title": "Impressora de Rede Offline",
+      "description": "A impressora do piso 3 está offline e não está a responder.",
+      "category": "Hardware/Impressoras",
+      "priority": "Média",
+      "status": "Em Progresso",
+      "createdAt": "2025-11-10T10:15:00Z",
+      "assignedTo": "Marta Ferreira",
+      "impact": 3
+    },
+    {
+      "id": "INC-003",
+      "title": "CRM Lento - Toda a Aplicação",
+      "description": "Aplicação CRM está muito lenta, afetando toda a equipa de vendas.",
+      "category": "Software/CRM",
+      "priority": "Crítica",
+      "status": "Escalado",
+      "createdAt": "2025-11-10T11:45:00Z",
+      "assignedTo": "Carlos Pinto",
+      "impact": 15
+    },
+    {
+      "id": "INC-004",
+      "title": "Servidor BD Principais - CPU 100%",
+      "description": "Alerta crítico: Servidor de BD está com CPU a 100% e a responder lentamente.",
+      "category": "Infraestrutura/Base de Dados",
+      "priority": "Crítica",
+      "status": "Escalado",
+      "createdAt": "2025-11-10T14:20:00Z",
+      "assignedTo": "Carlos Pinto",
+      "impact": 50
+    },
+    {
+      "id": "INC-005",
+      "title": "Acesso VPN não funciona",
+      "description": "Utilizador remoto não consegue estabelecer ligação VPN.",
+      "category": "Redes/Conectividade",
+      "priority": "Alta",
+      "status": "Aberto",
+      "createdAt": "2025-11-11T08:00:00Z",
+      "assignedTo": "Marta Ferreira",
+      "impact": 1
+    },
+    {
+      "id": "INC-006",
+      "title": "Sincronização de Ficheiros Lenta",
+      "description": "Sincronização OneDrive/SharePoint está muito lenta.",
+      "category": "Software/Armazenamento",
+      "priority": "Média",
+      "status": "Resolvido",
+      "createdAt": "2025-11-09T15:30:00Z",
+      "assignedTo": "Marta Ferreira",
+      "impact": 5,
+      "resolvedAt": "2025-11-10T10:00:00Z"
+    }
+  ],
+  "metrics": {
+    "mttr": {
+      "total": 2.5,
+      "byCategory": {
+        "Email/Comunicações": 1.2,
+        "Hardware/Impressoras": 1.8,
+        "Software/CRM": 4.5,
+        "Infraestrutura/Base de Dados": 3.2,
+        "Redes/Conectividade": 2.1,
+        "Software/Armazenamento": 1.5
+      }
+    },
+    "incidentsByPriority": {
+      "Crítica": 2,
+      "Alta": 2,
+      "Média": 2,
+      "Baixa": 0
+    },
+    "incidentsByStatus": {
+      "Aberto": 2,
+      "Em Progresso": 1,
+      "Escalado": 2,
+      "Resolvido": 1
+    },
+    "incidentsByCategory": {
+      "Email/Comunicações": 1,
+      "Hardware/Impressoras": 1,
+      "Software/CRM": 1,
+      "Infraestrutura/Base de Dados": 1,
+      "Redes/Conectividade": 1,
+      "Software/Armazenamento": 1
+    },
+    "totalImpactedUsers": 79
+  }
+}

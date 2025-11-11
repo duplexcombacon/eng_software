@@ -1,0 +1,325 @@
+/* ==========================================
+   INDEX.CSS - Estilos Específicos do Login
+   ========================================== */
+
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-wrapper {
+    width: 100%;
+    max-width: 450px;
+    padding: 20px;
+}
+
+.login-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+    padding: 50px 40px;
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================
+   CABEÇALHO DO LOGIN
+   ========================================== */
+
+.login-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.login-header .icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.login-header h1 {
+    color: #2c3e50;
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.login-header p {
+    color: #7f8c8d;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* ==========================================
+   FORMULÁRIO DE LOGIN
+   ========================================== */
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    font-weight: 500;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    display: block;
+    font-size: 14px;
+}
+
+.form-control {
+    border: 1.5px solid #ecf0f1;
+    border-radius: 6px;
+    padding: 12px 15px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+.form-control::placeholder {
+    color: #bdc3c7;
+}
+
+/* ==========================================
+   REMEMBER E FORGOT PASSWORD
+   ========================================== */
+
+.remember-forgot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    font-size: 13px;
+}
+
+.form-check {
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    margin-top: 0;
+    cursor: pointer;
+    border: 1.5px solid #ecf0f1;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.form-check-input:checked {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+
+.form-check-label {
+    margin-bottom: 0;
+    margin-left: 8px;
+    cursor: pointer;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.forgot-link {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.forgot-link:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}
+
+/* ==========================================
+   BOTÃO DE LOGIN
+   ========================================== */
+
+.btn-login {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.btn-login:active {
+    transform: translateY(0);
+}
+
+.btn-login:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.loading-spinner {
+    display: none;
+    margin-right: 8px;
+}
+
+#btnText {
+    flex: 1;
+    text-align: center;
+}
+
+/* ==========================================
+   DIVISOR
+   ========================================== */
+
+.divider {
+    display: flex;
+    align-items: center;
+    margin: 25px 0;
+    color: #bdc3c7;
+    font-size: 13px;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #ecf0f1;
+}
+
+.divider span {
+    padding: 0 10px;
+}
+
+/* ==========================================
+   RODAPÉ DO LOGIN
+   ========================================== */
+
+.login-footer {
+    text-align: center;
+    font-size: 13px;
+    color: #7f8c8d;
+}
+
+.login-footer p {
+    margin: 0;
+    margin-bottom: 15px;
+}
+
+.login-footer a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.login-footer a:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}
+
+/* ==========================================
+   ALERTAS
+   ========================================== */
+
+#alertContainer {
+    margin-bottom: 20px;
+}
+
+.alert {
+    border-radius: 6px;
+    border: none;
+    margin-bottom: 15px;
+    font-size: 14px;
+    padding: 12px 16px;
+}
+
+.alert-danger {
+    background-color: #ffe5e5;
+    color: #c0392b;
+}
+
+.alert-success {
+    background-color: #e5f5e5;
+    color: #27ae60;
+}
+
+.btn-close {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+}
+
+.btn-close:hover {
+    opacity: 0.8;
+}
+
+/* ==========================================
+   RESPONSIVIDADE
+   ========================================== */
+
+@media (max-width: 576px) {
+    .login-container {
+        padding: 35px 25px;
+    }
+
+    .login-header h1 {
+        font-size: 24px;
+    }
+
+    .login-header .icon {
+        font-size: 40px;
+    }
+
+    .login-header p {
+        font-size: 13px;
+    }
+
+    .remember-forgot {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .forgot-link {
+        display: block;
+        margin-top: 5px;
+    }
+
+    .btn-login {
+        padding: 10px;
+        font-size: 14px;
+    }
+}
