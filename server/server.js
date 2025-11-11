@@ -1,5 +1,8 @@
+import dotenv from "dotenv";
+dotenv.config();
+
+import "./db.js";       // Inicializa ligação BD
 import app from "./app.js";
-import "./db.js"; // só para garantir ligação à DB ao iniciar
 
 const PORT = process.env.PORT || 3001;
 

@@ -1,16 +1,22 @@
 // server/routes/auth.js
-const express = require("express");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const { poolPromise, sql } = require("../db");
-require("dotenv").config();
+import { Router } from "express";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { poolPromise, sql } from "../db.js";
+import dotenv from "dotenv";
 
-const router = express.Router();
+dotenv.config();
+
+const router = Router();
 
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password)
-    return res.status(400).json({ message: "Email e password obrigatórios" });
+
+  if (!email || !password) {
+    return res
+      .status(400)
+      .json({ message: "Email e password obrigatórios" });
+  }
 
   try {
     const pool = await poolPromise;
@@ -20,16 +26,21 @@ router.post("/login", async (req, res) => {
       .query("SELECT TOP 1 * FROM Users WHERE email = @email");
 
     const user = result.recordset[0];
-    if (!user) return res.status(401).json({ message: "Credenciais inválidas" });
+
+    if (!user) {
+      return res.status(401).json({ message: "Credenciais inválidas" });
+    }
 
     const ok = await bcrypt.compare(password, user.passwordHash);
-    if (!ok) return res.status(401).json({ message: "Credenciais inválidas" });
+    if (!ok) {
+      return res.status(401).json({ message: "Credenciais inválidas" });
+    }
 
     const token = jwt.sign(
       {
         id: user.id,
         name: user.name,
-        role: user.role,
+        role: user.role,   // 'gestor', 'tecnico', 'sysadmin'
         title: user.title
       },
       process.env.JWT_SECRET,
@@ -51,4 +62,4 @@ router.post("/login", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

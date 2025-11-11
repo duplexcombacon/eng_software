@@ -1,9 +1,9 @@
 // server/routes/incidents.js
-const express = require("express");
-const { poolPromise, sql } = require("../db");
-const { authRequired } = require("../middlewares/auth");
+import { Router } from "express";
+import { poolPromise, sql } from "../db.js";
+import { authRequired } from "../middlewares/auth.js";
 
-const router = express.Router();
+const router = Router();
 
 // GET /api/incidents
 router.get("/", authRequired, async (req, res) => {
@@ -21,11 +21,14 @@ router.get("/", authRequired, async (req, res) => {
 
 // POST /api/incidents
 router.post("/", authRequired, async (req, res) => {
-  const { title, description, category, priority } = req.body;
-  if (!title || !description || !category)
+  const { title, description, category, priority, affectedUsers } = req.body;
+
+  if (!title || !description || !category) {
     return res.status(400).json({ message: "Campos obrigatórios em falta" });
+  }
 
   const prio = priority || "Média";
+  const affected = Number.isInteger(affectedUsers) ? affectedUsers : 0;
 
   try {
     const pool = await poolPromise;
@@ -35,13 +38,20 @@ router.post("/", authRequired, async (req, res) => {
       .input("description", sql.NVarChar, description)
       .input("category", sql.NVarChar, category)
       .input("priority", sql.NVarChar, prio)
-      .input("status", sql.NVarChar, "Novo")
+      .input("status", sql.NVarChar, "Aberto")     // usa o mesmo em todo o lado
       .input("source", sql.NVarChar, "manual")
       .input("createdBy", sql.Int, req.user.id)
+      .input("affectedUsers", sql.Int, affected)
       .query(`
-        INSERT INTO Incidents (title, description, category, priority, status, source, createdBy)
+        INSERT INTO Incidents (
+          title, description, category, priority, status,
+          source, createdBy, affectedUsers
+        )
         OUTPUT INSERTED.*
-        VALUES (@title, @description, @category, @priority, @status, @source, @createdBy)
+        VALUES (
+          @title, @description, @category, @priority, @status,
+          @source, @createdBy, @affectedUsers
+        )
       `);
 
     res.status(201).json(result.recordset[0]);
@@ -56,8 +66,9 @@ router.patch("/:id", authRequired, async (req, res) => {
   const { id } = req.params;
   const { status, priority, assignedTo } = req.body;
 
-  if (!status && !priority && !assignedTo)
+  if (!status && !priority && !assignedTo) {
     return res.status(400).json({ message: "Nada para atualizar" });
+  }
 
   try {
     const pool = await poolPromise;
@@ -68,6 +79,7 @@ router.patch("/:id", authRequired, async (req, res) => {
     if (status) {
       sets.push("status = @status");
       request.input("status", sql.NVarChar, status);
+
       if (status === "Resolvido" || status === "Fechado") {
         sets.push("resolvedAt = GETDATE()");
       }
@@ -91,7 +103,8 @@ router.patch("/:id", authRequired, async (req, res) => {
     `;
 
     const result = await request.query(query);
-    const updated = result.recordset[result.recordset.length - 1];
+    const updated =
+      result.recordset[result.recordset.length - 1] || null;
 
     res.json(updated);
   } catch (err) {
@@ -100,4 +113,4 @@ router.patch("/:id", authRequired, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

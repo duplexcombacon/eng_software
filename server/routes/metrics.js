@@ -1,24 +1,33 @@
+// server/routes/metrics.js
 import { Router } from "express";
 import { poolPromise, sql } from "../db.js";
 import { authRequired, requireRole } from "../middlewares/auth.js";
 
 const router = Router();
 
-// GET /api/metrics  (apenas Gestor, por ex.)
-router.get("/", authRequired, requireRole("GESTOR"), async (req, res) => {
+// Apenas utilizadores com role 'gestor'
+router.get("/", authRequired, requireRole("gestor"), async (req, res) => {
   try {
     const pool = await poolPromise;
 
-    const total = await pool.request()
+    const total = await pool
+      .request()
       .query("SELECT COUNT(*) AS total FROM Incidents");
 
-    const byPriority = await pool.request()
-      .query("SELECT priority, COUNT(*) AS count FROM Incidents GROUP BY priority");
+    const byPriority = await pool
+      .request()
+      .query(
+        "SELECT priority, COUNT(*) AS count FROM Incidents GROUP BY priority"
+      );
 
-    const byCategory = await pool.request()
-      .query("SELECT category, COUNT(*) AS count FROM Incidents GROUP BY category");
+    const byCategory = await pool
+      .request()
+      .query(
+        "SELECT category, COUNT(*) AS count FROM Incidents GROUP BY category"
+      );
 
-    const mttr = await pool.request()
+    const mttr = await pool
+      .request()
       .query(`
         SELECT AVG(DATEDIFF(HOUR, createdAt, resolvedAt)) AS mttrHours
         FROM Incidents

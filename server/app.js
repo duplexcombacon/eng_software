@@ -14,13 +14,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Rotas
+// Rotas principais da API
 app.use("/api/auth", authRoutes);
 app.use("/api/incidents", incidentRoutes);
 app.use("/api/alerts", alertRoutes);
 app.use("/api/metrics", metricsRoutes);
 
-// Fallback simples
+// 404 genérico
 app.use((req, res) => {
   res.status(404).json({ message: "Not found" });
 });
