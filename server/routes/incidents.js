@@ -11,10 +11,49 @@ router.get("/", authRequired, async (req, res) => {
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .query("SELECT * FROM Incidents ORDER BY createdAt DESC");
+      .query(`
+        SELECT 
+          i.*,
+          u1.name AS assignedToName,
+          u2.name AS createdByName
+        FROM Incidents i
+        LEFT JOIN Users u1 ON i.assignedTo = u1.id
+        LEFT JOIN Users u2 ON i.createdBy = u2.id
+        ORDER BY i.createdAt DESC
+      `);
     res.json(result.recordset);
   } catch (err) {
     console.error("Get incidents error:", err);
+    res.status(500).json({ message: "Erro no servidor" });
+  }
+});
+
+// GET /api/incidents/:id
+router.get("/:id", authRequired, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("id", sql.Int, id)
+      .query(`
+        SELECT 
+          i.*,
+          u1.name AS assignedToName,
+          u2.name AS createdByName
+        FROM Incidents i
+        LEFT JOIN Users u1 ON i.assignedTo = u1.id
+        LEFT JOIN Users u2 ON i.createdBy = u2.id
+        WHERE i.id = @id
+      `);
+    
+    if (result.recordset.length === 0) {
+      return res.status(404).json({ message: "Incidente não encontrado" });
+    }
+    
+    res.json(result.recordset[0]);
+  } catch (err) {
+    console.error("Get incident error:", err);
     res.status(500).json({ message: "Erro no servidor" });
   }
 });
@@ -99,7 +138,14 @@ router.patch("/:id", authRequired, async (req, res) => {
       UPDATE Incidents
       SET ${sets.join(", ")}
       WHERE id = @id;
-      SELECT * FROM Incidents WHERE id = @id;
+      SELECT 
+        i.*,
+        u1.name AS assignedToName,
+        u2.name AS createdByName
+      FROM Incidents i
+      LEFT JOIN Users u1 ON i.assignedTo = u1.id
+      LEFT JOIN Users u2 ON i.createdBy = u2.id
+      WHERE i.id = @id;
     `;
 
     const result = await request.query(query);

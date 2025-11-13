@@ -29,10 +29,10 @@
                 <p style="color: #7f8c8d; margin: 0;">Alertas Críticos e Incidentes Escalados de Nível 2</p>
             </div>
             <div class="user-info">
-                <div class="avatar" id="userAvatar">C</div>
+                <div class="avatar" id="userAvatar">U</div>
                 <div class="user-details">
-                    <p class="user-name" id="userName">Carlos Pinto</p>
-                    <p class="user-role" id="userRole">Administrador de Sistemas</p>
+                    <p class="user-name" id="userName">Utilizador</p>
+                    <p class="user-role" id="userRole">Perfil</p>
                 </div>
                 <button class="logout-btn" onclick="logout()">Sair</button>
             </div>
@@ -41,51 +41,37 @@
         <!-- Banner Alertas Críticos -->
         <div id="criticalAlert" style="background-color: #ffe5e5; border-left: 5px solid #e74c3c; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; display: none;">
             <h3 style="color: #c0392b; margin: 0 0 0.5rem 0;">🚨 Alerta Crítico Ativo!</h3>
-            <p style="color: #a93226; margin: 0;" id="criticalAlertMsg">Servidor de BD com CPU a 100% - INC-004</p>
+            <p style="color: #a93226; margin: 0;" id="criticalAlertMsg">Nenhum alerta crítico</p>
         </div>
 
         <!-- Métricas -->
         <div class="metrics-grid">
             <div class="metric-card critical">
                 <p class="metric-label">🔴 Alertas Críticos</p>
-                <p class="metric-value" id="criticalAlertsValue">2</p>
+                <p class="metric-value" id="criticalAlertsValue">0</p>
                 <p class="metric-unit">requerem ação</p>
                 <p class="metric-change" style="color: #e74c3c;">Ação imediata necessária!</p>
             </div>
 
             <div class="metric-card">
                 <p class="metric-label">⚠️ Alertas Altos</p>
-                <p class="metric-value" id="highAlertsValue">3</p>
+                <p class="metric-value" id="highAlertsValue">0</p>
                 <p class="metric-unit">sob monitorização</p>
                 <p class="metric-change">Monitorizar próximas 2 horas</p>
             </div>
 
-            <div class="metric-card">
-                <p class="metric-label">📶 Sistemas Online</p>
-                <p class="metric-value" id="onlineSystems">12</p>
-                <p class="metric-unit">de 13</p>
-                <p class="metric-change negative">↓ 1 offline</p>
-            </div>
-
             <div class="metric-card resolved">
                 <p class="metric-label">✅ Incidentes Resolvidos</p>
-                <p class="metric-value" id="resolvedValue">1</p>
+                <p class="metric-value" id="resolvedValue">0</p>
                 <p class="metric-unit">hoje</p>
-                <p class="metric-change">MTTR: 2h 30min</p>
+                <p class="metric-change">MTTR calculado em tempo real</p>
             </div>
 
             <div class="metric-card">
                 <p class="metric-label">👥 Utilizadores Afetados</p>
-                <p class="metric-value" id="impactedValue">79</p>
+                <p class="metric-value" id="impactedValue">0</p>
                 <p class="metric-unit">total</p>
-                <p class="metric-change">2 incidentes críticos</p>
-            </div>
-
-            <div class="metric-card">
-                <p class="metric-label">📊 Uptime Atual</p>
-                <p class="metric-value">99.8%</p>
-                <p class="metric-unit">este mês</p>
-                <p class="metric-change positive">↑ 0.5% face ao mês anterior</p>
+                <p class="metric-change">Calculado a partir dos incidentes</p>
             </div>
         </div>
 
@@ -97,28 +83,21 @@
                     <label for="filterSeverity">Severidade:</label>
                     <select id="filterSeverity">
                         <option value="">Todas</option>
-                        <option value="Crítica">Crítica</option>
-                        <option value="Alta">Alta</option>
-                        <option value="Média">Média</option>
+                        <!-- Preenchido dinamicamente por options.js -->
                     </select>
                 </div>
                 <div class="filter-item">
                     <label for="filterType">Tipo:</label>
                     <select id="filterType">
                         <option value="">Todos</option>
-                        <option value="Infraestrutura/Base de Dados">Base de Dados</option>
-                        <option value="Redes/Conectividade">Rede</option>
-                        <option value="Software/CRM">Aplicações</option>
-                        <option value="Hardware/Impressoras">Hardware</option>
+                        <!-- Preenchido dinamicamente por options.js -->
                     </select>
                 </div>
                 <div class="filter-item">
                     <label for="filterStatus">Status:</label>
                     <select id="filterStatus">
                         <option value="">Todos</option>
-                        <option value="Aberto">Aberto</option>
-                        <option value="Em Progresso">Em Progresso</option>
-                        <option value="Resolvido">Resolvido</option>
+                        <!-- Preenchido dinamicamente por options.js -->
                     </select>
                 </div>
             </div>
@@ -188,73 +167,8 @@
         </div>
 
         <!-- Status dos Sistemas -->
-        <div class="table-container">
-            <h3 class="table-title">🖥️ Status da Infraestrutura</h3>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Sistema</th>
-                            <th>Status</th>
-                            <th>CPU</th>
-                            <th>Memória</th>
-                            <th>Latência</th>
-                            <th>Última Verificação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Servidor BD Principal</td>
-                            <td><span class="status-badge progress">⚠️ CRÍTICO</span></td>
-                            <td style="color: #e74c3c; font-weight: bold;">100%</td>
-                            <td>85%</td>
-                            <td>250ms</td>
-                            <td>Há 2 min</td>
-                        </tr>
-                        <tr>
-                            <td>Web Server 01</td>
-                            <td><span class="status-badge resolved">✅ OK</span></td>
-                            <td>45%</td>
-                            <td>62%</td>
-                            <td>12ms</td>
-                            <td>Há 1 min</td>
-                        </tr>
-                        <tr>
-                            <td>Web Server 02</td>
-                            <td><span class="status-badge resolved">✅ OK</span></td>
-                            <td>42%</td>
-                            <td>58%</td>
-                            <td>14ms</td>
-                            <td>Há 1 min</td>
-                        </tr>
-                        <tr>
-                            <td>Mail Server</td>
-                            <td><span class="status-badge resolved">✅ OK</span></td>
-                            <td>38%</td>
-                            <td>55%</td>
-                            <td>8ms</td>
-                            <td>Há 2 min</td>
-                        </tr>
-                        <tr>
-                            <td>Storage NAS</td>
-                            <td><span class="status-badge resolved">✅ OK</span></td>
-                            <td>65%</td>
-                            <td>78%</td>
-                            <td>25ms</td>
-                            <td>Há 3 min</td>
-                        </tr>
-                        <tr>
-                            <td>Firewall</td>
-                            <td><span class="status-badge resolved">✅ OK</span></td>
-                            <td>32%</td>
-                            <td>48%</td>
-                            <td>2ms</td>
-                            <td>Há 1 min</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        <!-- Nota: Esta secção foi removida pois os dados de infraestrutura não estão disponíveis na base de dados atual -->
+        <!-- Se precisar de mostrar status de sistemas, será necessário criar uma nova tabela e endpoint na API -->
 
         <!-- Empty State -->
         <div id="emptyState" class="empty-state" style="display: none;">
@@ -266,6 +180,15 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../static/js/main.js"></script>
+    <script src="../static/js/api.js"></script>
+    <script src="../static/js/options.js"></script>
     <script src="../static/js/dashboard.js"></script>
+    <script>
+        // Carregar opções dinamicamente e atualizar info do utilizador
+        document.addEventListener('DOMContentLoaded', async () => {
+            updateUserInfo();
+            await loadOptions();
+        });
+    </script>
 </body>
 </html>

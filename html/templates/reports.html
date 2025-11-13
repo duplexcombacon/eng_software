@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios - Gestor de Incidentes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="../static/css/dashboard.css">
+</head>
+<body class="dashboard">
+    <!-- Navbar -->
+    <nav class="dashboard-navbar">
+        <div class="navbar-content">
+            <h2 class="navbar-brand">🚨 Gestor de Incidentes</h2>
+            <div class="navbar-menu">
+                <a href="dashboard-gestor.html">Dashboard</a>
+                <a href="incident_list.html">Incidentes</a>
+                <a href="reports.html" class="active">Relatórios</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div>
+                <h1>Relatórios e Análises</h1>
+                <p style="color: #7f8c8d; margin: 0;">Análise detalhada de incidentes e métricas de desempenho</p>
+            </div>
+            <div class="user-info">
+                <div class="avatar" id="userAvatar">U</div>
+                <div class="user-details">
+                    <p class="user-name" id="userName">Utilizador</p>
+                    <p class="user-role" id="userRole">Perfil</p>
+                </div>
+                <button class="logout-btn" onclick="logout()">Sair</button>
+            </div>
+        </div>
+
+        <!-- Filtros de Relatório -->
+        <div class="filter-section">
+            <h3 class="filter-title">📊 Parâmetros do Relatório</h3>
+            <div class="filter-group">
+                <div class="filter-item">
+                    <label for="reportPeriod">Período:</label>
+                    <select id="reportPeriod">
+                        <option value="week">Última Semana</option>
+                        <option value="month" selected>Último Mês</option>
+                        <option value="quarter">Último Trimestre</option>
+                        <option value="year">Último Ano</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="reportCategory">Categoria:</label>
+                    <select id="reportCategory">
+                        <option value="">Todas</option>
+                        <!-- Preenchido dinamicamente por options.js -->
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <button class="btn-apply" onclick="generateReport()">Gerar Relatório</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Métricas do Relatório -->
+        <div class="metrics-grid">
+            <div class="metric-card mttr">
+                <p class="metric-label">⏱️ MTTR (Tempo Médio de Resolução)</p>
+                <p class="metric-value" id="reportMttr">0.0</p>
+                <p class="metric-unit">horas</p>
+            </div>
+
+            <div class="metric-card total">
+                <p class="metric-label">📊 Total de Incidentes</p>
+                <p class="metric-value" id="reportTotal">0</p>
+                <p class="metric-unit">no período</p>
+            </div>
+
+            <div class="metric-card critical">
+                <p class="metric-label">🔴 Incidentes Críticos</p>
+                <p class="metric-value" id="reportCritical">0</p>
+                <p class="metric-unit">registados</p>
+            </div>
+
+            <div class="metric-card resolved">
+                <p class="metric-label">✅ Taxa de Resolução</p>
+                <p class="metric-value" id="reportResolvedRate">0%</p>
+                <p class="metric-unit">resolvidos</p>
+            </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3 class="chart-title">📈 Incidentes por Prioridade</h3>
+                <div class="placeholder-chart">
+                    Gráfico: Distribuição por Prioridade
+                    <br>(Chart.js / Canvas - a implementar)
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3 class="chart-title">🏷️ Incidentes por Categoria</h3>
+                <div class="placeholder-chart">
+                    Gráfico: Distribuição por Categoria
+                    <br>(Chart.js / Canvas - a implementar)
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3 class="chart-title">📊 Evolução Temporal</h3>
+                <div class="placeholder-chart">
+                    Gráfico: Incidentes ao Longo do Tempo
+                    <br>(Chart.js / Canvas - a implementar)
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3 class="chart-title">⏳ Tempo de Resolução</h3>
+                <div class="placeholder-chart">
+                    Gráfico: Distribuição de Tempos de Resolução
+                    <br>(Chart.js / Canvas - a implementar)
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela de Resumo -->
+        <div class="table-container">
+            <h3 class="table-title">📋 Resumo por Categoria</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Categoria</th>
+                            <th>Total</th>
+                            <th>Abertos</th>
+                            <th>Resolvidos</th>
+                            <th>MTTR (horas)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody">
+                        <!-- Preenchido por JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../static/js/main.js"></script>
+    <script src="../static/js/api.js"></script>
+    <script src="../static/js/options.js"></script>
+    <script src="../static/js/dashboard.js"></script>
+    <script>
+        // Carregar opções dinamicamente e atualizar info do utilizador
+        document.addEventListener('DOMContentLoaded', async () => {
+            updateUserInfo();
+            await loadOptions();
+        });
+    </script>
+    <script>
+        // Garantir que só gestores acedem
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = requireAuth();
+            if (!user || user.role !== 'gestor') {
+                window.location.href = '../index.html';
+                return;
+            }
+
+            updateUserInfo();
+            generateReport();
+        });
+
+        async function generateReport() {
+            try {
+                // Carregar incidentes
+                const data = await loadIncidents();
+                const allIncidents = Array.isArray(data.incidents) ? data.incidents : [];
+
+                // Aplicar filtros de período
+                const period = document.getElementById('reportPeriod').value;
+                const category = document.getElementById('reportCategory').value;
+                
+                let filteredIncidents = [...allIncidents];
+
+                // Filtrar por período
+                const now = new Date();
+                const startDate = new Date(now);
+                switch (period) {
+                    case 'week':
+                        startDate.setDate(now.getDate() - 7);
+                        break;
+                    case 'month':
+                        startDate.setMonth(now.getMonth() - 1);
+                        break;
+                    case 'quarter':
+                        startDate.setMonth(now.getMonth() - 3);
+                        break;
+                    case 'year':
+                        startDate.setFullYear(now.getFullYear() - 1);
+                        break;
+                }
+
+                filteredIncidents = filteredIncidents.filter(inc => {
+                    const createdAt = inc.createdAt || inc.created_at;
+                    if (!createdAt) return false;
+                    const created = new Date(createdAt);
+                    return !isNaN(created) && created >= startDate;
+                });
+
+                // Filtrar por categoria
+                if (category) {
+                    filteredIncidents = filteredIncidents.filter(inc => inc.category === category);
+                }
+
+                // Calcular métricas
+                const total = filteredIncidents.length;
+                const critical = filteredIncidents.filter(inc => inc.priority === 'Crítica').length;
+                const resolved = filteredIncidents.filter(inc => inc.status === 'Resolvido').length;
+                const resolvedRate = total > 0 ? ((resolved / total) * 100).toFixed(1) : 0;
+
+                // Calcular MTTR
+                const resolvedIncidents = filteredIncidents.filter(inc => {
+                    const statusResolved = inc.status === 'Resolvido' || inc.status === 'Fechado';
+                    const hasDates = (inc.resolvedAt || inc.resolved_at) && (inc.createdAt || inc.created_at);
+                    return statusResolved && hasDates;
+                });
+
+                let mttr = 0;
+                if (resolvedIncidents.length > 0) {
+                    const totalHours = resolvedIncidents.reduce((sum, inc) => {
+                        const created = new Date(inc.createdAt || inc.created_at);
+                        const resolvedDate = new Date(inc.resolvedAt || inc.resolved_at);
+                        if (isNaN(created) || isNaN(resolvedDate)) return sum;
+                        const hours = (resolvedDate - created) / (1000 * 60 * 60);
+                        return sum + (hours > 0 ? hours : 0);
+                    }, 0);
+                    mttr = totalHours / resolvedIncidents.length;
+                }
+
+                // Atualizar métricas
+                document.getElementById('reportMttr').textContent = mttr > 0 ? mttr.toFixed(1) : '0.0';
+                document.getElementById('reportTotal').textContent = total;
+                document.getElementById('reportCritical').textContent = critical;
+                document.getElementById('reportResolvedRate').textContent = resolvedRate + '%';
+
+                // Gerar tabela por categoria
+                const categories = {};
+                filteredIncidents.forEach(inc => {
+                    const cat = inc.category || 'Outros';
+                    if (!categories[cat]) {
+                        categories[cat] = { total: 0, open: 0, resolved: 0, resolvedDates: [] };
+                    }
+                    categories[cat].total++;
+                    if (inc.status === 'Aberto' || inc.status === 'Em Progresso') {
+                        categories[cat].open++;
+                    }
+                    if (inc.status === 'Resolvido') {
+                        categories[cat].resolved++;
+                        if (inc.resolvedAt || inc.resolved_at) {
+                            categories[cat].resolvedDates.push({
+                                created: inc.createdAt || inc.created_at,
+                                resolved: inc.resolvedAt || inc.resolved_at
+                            });
+                        }
+                    }
+                });
+
+                const tbody = document.getElementById('reportTableBody');
+                tbody.innerHTML = '';
+                
+                Object.keys(categories).forEach(cat => {
+                    const catData = categories[cat];
+                    let catMttr = 0;
+                    if (catData.resolvedDates.length > 0) {
+                        const totalHours = catData.resolvedDates.reduce((sum, d) => {
+                            const created = new Date(d.created);
+                            const resolved = new Date(d.resolved);
+                            if (isNaN(created) || isNaN(resolved)) return sum;
+                            const hours = (resolved - created) / (1000 * 60 * 60);
+                            return sum + (hours > 0 ? hours : 0);
+                        }, 0);
+                        catMttr = totalHours / catData.resolvedDates.length;
+                    }
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><strong>${cat}</strong></td>
+                        <td>${catData.total}</td>
+                        <td>${catData.open}</td>
+                        <td>${catData.resolved}</td>
+                        <td>${catMttr > 0 ? catMttr.toFixed(1) : '-'}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+            } catch (err) {
+                console.error("Erro ao gerar relatório:", err);
+                showNotification("Erro ao gerar relatório.", "error");
+            }
+        }
+    </script>
+</body>
+</html>
+

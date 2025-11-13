@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alertas - Gestor de Incidentes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="../static/css/dashboard.css">
+</head>
+<body class="dashboard">
+    <!-- Navbar -->
+    <nav class="dashboard-navbar">
+        <div class="navbar-content">
+            <h2 class="navbar-brand">🚨 Gestor de Incidentes</h2>
+            <div class="navbar-menu">
+                <a href="dashboard-sysadmin.html">Dashboard</a>
+                <a href="incident-list-sysadmin.html">Incidentes Escalados</a>
+                <a href="alerts.html" class="active">Alertas</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div>
+                <h1>Gestão de Alertas</h1>
+                <p style="color: #7f8c8d; margin: 0;">Monitorização de alertas do sistema e infraestrutura</p>
+            </div>
+            <div class="user-info">
+                <div class="avatar" id="userAvatar">U</div>
+                <div class="user-details">
+                    <p class="user-name" id="userName">Utilizador</p>
+                    <p class="user-role" id="userRole">Perfil</p>
+                </div>
+                <button class="logout-btn" onclick="logout()">Sair</button>
+            </div>
+        </div>
+
+        <!-- Alertas Críticos -->
+        <div id="criticalAlert" style="background-color: #ffe5e5; border-left: 5px solid #e74c3c; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; display: none;">
+            <h3 style="color: #c0392b; margin: 0 0 0.5rem 0;">🚨 Alertas Críticos Ativos</h3>
+            <div id="criticalAlertsList"></div>
+        </div>
+
+        <!-- Métricas de Alertas -->
+        <div class="metrics-grid">
+            <div class="metric-card critical">
+                <p class="metric-label">🔴 Alertas Críticos</p>
+                <p class="metric-value" id="criticalAlertsCount">0</p>
+                <p class="metric-unit">ativos</p>
+            </div>
+
+            <div class="metric-card">
+                <p class="metric-label">⚠️ Alertas Altos</p>
+                <p class="metric-value" id="highAlertsCount">0</p>
+                <p class="metric-unit">monitorização</p>
+            </div>
+
+            <div class="metric-card">
+                <p class="metric-label">📊 Total de Alertas</p>
+                <p class="metric-value" id="totalAlertsCount">0</p>
+                <p class="metric-unit">hoje</p>
+            </div>
+
+            <div class="metric-card resolved">
+                <p class="metric-label">✅ Resolvidos</p>
+                <p class="metric-value" id="resolvedAlertsCount">0</p>
+                <p class="metric-unit">últimas 24h</p>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filter-section">
+            <h3 class="filter-title">🔍 Filtros</h3>
+            <div class="filter-group">
+                <div class="filter-item">
+                    <label for="filterSeverity">Severidade:</label>
+                    <select id="filterSeverity">
+                        <option value="">Todas</option>
+                        <option value="Crítica">Crítica</option>
+                        <option value="Alta">Alta</option>
+                        <option value="Média">Média</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="filterStatus">Status:</label>
+                    <select id="filterStatus">
+                        <option value="">Todos</option>
+                        <option value="Aberto">Aberto</option>
+                        <option value="Em Progresso">Em Progresso</option>
+                        <option value="Resolvido">Resolvido</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <button class="btn-apply" onclick="loadAlerts()">Atualizar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela de Alertas -->
+        <div class="table-container">
+            <h3 class="table-title">📋 Alertas do Sistema</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Categoria</th>
+                            <th>Prioridade</th>
+                            <th>Status</th>
+                            <th>Afetados</th>
+                            <th>Criado em</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alertsTableBody">
+                        <!-- Preenchido por JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">✅</div>
+            <h3 class="empty-state-title">Sem Alertas</h3>
+            <p class="empty-state-text">Não há alertas ativos no momento. Todos os sistemas estão operacionais!</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../static/js/main.js"></script>
+    <script src="../static/js/dashboard.js"></script>
+    <script>
+        // Garantir que só sysadmins acedem
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = requireAuth();
+            if (!user || user.role !== 'sysadmin') {
+                window.location.href = '../index.html';
+                return;
+            }
+
+            updateUserInfo();
+            loadAlerts();
+        });
+
+        async function loadAlerts() {
+            try {
+                // Carregar incidentes que são alertas (source = 'monitoring' ou priority = 'Crítica')
+                const data = await loadIncidents();
+                const allIncidents = Array.isArray(data.incidents) ? data.incidents : [];
+
+                // Filtrar apenas incidentes críticos ou escalados (alertas)
+                let alerts = allIncidents.filter(inc => 
+                    inc.status === 'Escalado' || 
+                    inc.priority === 'Crítica' || 
+                    inc.priority === 'Alta' ||
+                    inc.source === 'monitoring'
+                );
+
+                // Aplicar filtros
+                const severity = document.getElementById('filterSeverity').value;
+                const status = document.getElementById('filterStatus').value;
+
+                if (severity) {
+                    alerts = alerts.filter(inc => inc.priority === severity);
+                }
+
+                if (status) {
+                    alerts = alerts.filter(inc => inc.status === status);
+                }
+
+                // Calcular métricas
+                const critical = alerts.filter(inc => inc.priority === 'Crítica').length;
+                const high = alerts.filter(inc => inc.priority === 'Alta').length;
+                const total = alerts.length;
+                const resolved = alerts.filter(inc => inc.status === 'Resolvido').length;
+
+                // Atualizar métricas
+                document.getElementById('criticalAlertsCount').textContent = critical;
+                document.getElementById('highAlertsCount').textContent = high;
+                document.getElementById('totalAlertsCount').textContent = total;
+                document.getElementById('resolvedAlertsCount').textContent = resolved;
+
+                // Mostrar banner de alertas críticos
+                const criticalAlertDiv = document.getElementById('criticalAlert');
+                const criticalAlertsList = document.getElementById('criticalAlertsList');
+                const criticalAlerts = alerts.filter(inc => inc.priority === 'Crítica' && inc.status !== 'Resolvido');
+
+                if (criticalAlerts.length > 0) {
+                    criticalAlertDiv.style.display = 'block';
+                    criticalAlertsList.innerHTML = criticalAlerts.map(inc => 
+                        `<p style="color: #a93226; margin: 0.5rem 0;">• ${inc.title} - ID: ${inc.id}</p>`
+                    ).join('');
+                } else {
+                    criticalAlertDiv.style.display = 'none';
+                }
+
+                // Renderizar tabela
+                const tbody = document.getElementById('alertsTableBody');
+                const emptyState = document.getElementById('emptyState');
+
+                if (!tbody) return;
+
+                tbody.innerHTML = '';
+
+                if (!alerts.length) {
+                    if (emptyState) emptyState.style.display = 'block';
+                    return;
+                }
+
+                if (emptyState) emptyState.style.display = 'none';
+
+                alerts.forEach(alert => {
+                    const row = document.createElement('tr');
+                    const priorityClass = (alert.priority || '').toLowerCase().replace(/\s+/g, '-');
+                    const statusClass = (alert.status || '').toLowerCase().replace(/\s+/g, '-');
+                    const createdAt = alert.createdAt || alert.created_at;
+                    const createdDate = createdAt ? formatDate(createdAt) : '-';
+
+                    row.innerHTML = `
+                        <td><strong>${alert.id}</strong></td>
+                        <td>${alert.title || '-'}</td>
+                        <td>${alert.category || '-'}</td>
+                        <td>
+                            <span class="priority-badge ${priorityClass}">
+                                ${alert.priority || '-'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge ${statusClass}">
+                                ${alert.status || '-'}
+                            </span>
+                        </td>
+                        <td>${alert.affectedUsers != null ? alert.affectedUsers : '-'}</td>
+                        <td>${createdDate}</td>
+                        <td>
+                            <a href="#" class="btn-action"
+                               onclick="viewAlert(${alert.id}, event)"
+                               style="color: #667eea; text-decoration: none; font-weight: 600;">
+                                Ver
+                            </a>
+                        </td>
+                    `;
+
+                    tbody.appendChild(row);
+                });
+
+            } catch (err) {
+                console.error("Erro ao carregar alertas:", err);
+                showNotification("Erro ao carregar alertas.", "error");
+            }
+        }
+
+        function viewAlert(id, event) {
+            if (event) event.preventDefault();
+            // Redirecionar para a página de detalhes
+            window.location.href = `incident-details.html?id=${id}`;
+        }
+    </script>
+</body>
+</html>
+

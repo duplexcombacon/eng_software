@@ -32,10 +32,10 @@
                 </p>
             </div>
             <div class="user-info">
-                <div class="avatar" id="userAvatar">G</div>
+                <div class="avatar" id="userAvatar">U</div>
                 <div class="user-details">
-                    <p class="user-name" id="userName">Gestor</p>
-                    <p class="user-role" id="userRole">Gestor de IT</p>
+                    <p class="user-name" id="userName">Utilizador</p>
+                    <p class="user-role" id="userRole">Perfil</p>
                 </div>
                 <button class="logout-btn" onclick="logout()">Sair</button>
             </div>
@@ -59,22 +59,14 @@
                     <label for="filterCategory">Categoria:</label>
                     <select id="filterCategory">
                         <option value="">Todas</option>
-                        <option value="Email/Comunicações">Email/Comunicações</option>
-                        <option value="Hardware/Impressoras">Hardware/Impressoras</option>
-                        <option value="Software/CRM">Software/CRM</option>
-                        <option value="Infraestrutura/Base de Dados">Infraestrutura/BD</option>
-                        <option value="Redes/Conectividade">Redes/Conectividade</option>
-                        <option value="Software/Armazenamento">Software/Armazenamento</option>
+                        <!-- Preenchido dinamicamente por options.js -->
                     </select>
                 </div>
                 <div class="filter-item">
                     <label for="filterPriority">Prioridade:</label>
                     <select id="filterPriority">
                         <option value="">Todas</option>
-                        <option value="Crítica">Crítica</option>
-                        <option value="Alta">Alta</option>
-                        <option value="Média">Média</option>
-                        <option value="Baixa">Baixa</option>
+                        <!-- Preenchido dinamicamente por options.js -->
                     </select>
                 </div>
             </div>
@@ -197,6 +189,15 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../static/js/main.js"></script>
+    <script src="../static/js/api.js"></script>
+    <script src="../static/js/options.js"></script>
     <script src="../static/js/dashboard.js"></script>
+    <script>
+        // Carregar opções dinamicamente e atualizar info do utilizador
+        document.addEventListener('DOMContentLoaded', async () => {
+            updateUserInfo();
+            await loadOptions();
+        });
+    </script>
 </body>
 </html>

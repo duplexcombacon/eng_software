@@ -63,8 +63,26 @@ async function loadIncidents() {
         throw new Error("Erro ao carregar incidentes");
     }
 
+    // A API retorna um array diretamente
     const incidents = await res.json();
-    return { incidents };
+    return { incidents: Array.isArray(incidents) ? incidents : [] };
+}
+
+// ============================================
+// Atualizar Informação do Utilizador
+// ============================================
+
+function updateUserInfo() {
+    const user = getCurrentUser();
+    if (!user) return;
+
+    const userAvatar = document.getElementById('userAvatar');
+    const userName = document.getElementById('userName');
+    const userRole = document.getElementById('userRole');
+
+    if (userAvatar) userAvatar.textContent = user.name?.charAt(0) || 'U';
+    if (userName) userName.textContent = user.name || 'Utilizador';
+    if (userRole) userRole.textContent = user.title || 'Perfil';
 }
 
 // ============================================

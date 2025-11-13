@@ -29,10 +29,10 @@
                 <p style="color: #7f8c8d; margin: 0;">Registar, Categorizar e Resolver Incidentes de Nível 1</p>
             </div>
             <div class="user-info">
-                <div class="avatar" id="userAvatar">M</div>
+                <div class="avatar" id="userAvatar">U</div>
                 <div class="user-details">
-                    <p class="user-name" id="userName">Marta Ferreira</p>
-                    <p class="user-role" id="userRole">Técnica de Suporte</p>
+                    <p class="user-name" id="userName">Utilizador</p>
+                    <p class="user-role" id="userRole">Perfil</p>
                 </div>
                 <button class="logout-btn" onclick="logout()">Sair</button>
             </div>
@@ -49,16 +49,16 @@
         <div class="metrics-grid">
             <div class="metric-card open">
                 <p class="metric-label">📋 Meus Incidentes Abertos</p>
-                <p class="metric-value" id="myOpenValue">2</p>
+                <p class="metric-value" id="myOpenValue">0</p>
                 <p class="metric-unit">aguardando ação</p>
                 <p class="metric-change" style="color: #e74c3c;">Requerem atenção!</p>
             </div>
 
             <div class="metric-card">
                 <p class="metric-label">⏳ Em Progresso</p>
-                <p class="metric-value" id="myProgressValue">1</p>
+                <p class="metric-value" id="myProgressValue">0</p>
                 <p class="metric-unit">a trabalhar</p>
-                <p class="metric-change">Última atualização: 2 horas</p>
+                <p class="metric-change">Última atualização</p>
             </div>
 
             <div class="metric-card resolved">
@@ -70,9 +70,9 @@
 
             <div class="metric-card critical">
                 <p class="metric-label">🔴 Escalados para Nível 2</p>
-                <p class="metric-value" id="myEscalatedValue">2</p>
+                <p class="metric-value" id="myEscalatedValue">0</p>
                 <p class="metric-unit">incidentes</p>
-                <p class="metric-change">Aguardando Carlos (SysAdmin)</p>
+                <p class="metric-change">Aguardando resolução</p>
             </div>
         </div>
 
@@ -84,29 +84,21 @@
                     <label for="filterStatus">Status:</label>
                     <select id="filterStatus">
                         <option value="">Todos</option>
-                        <option value="Aberto">Aberto</option>
-                        <option value="Em Progresso">Em Progresso</option>
-                        <option value="Escalado">Escalado</option>
-                        <option value="Resolvido">Resolvido</option>
+                        <!-- Preenchido dinamicamente por options.js -->
                     </select>
                 </div>
                 <div class="filter-item">
                     <label for="filterCategory">Categoria:</label>
                     <select id="filterCategory">
                         <option value="">Todas</option>
-                        <option value="Email/Comunicações">Email/Comunicações</option>
-                        <option value="Hardware/Impressoras">Hardware/Impressoras</option>
-                        <option value="Software/CRM">Software/CRM</option>
-                        <option value="Redes/Conectividade">Redes/Conectividade</option>
+                        <!-- Preenchido dinamicamente por options.js -->
                     </select>
                 </div>
                 <div class="filter-item">
                     <label for="filterPriority">Prioridade:</label>
                     <select id="filterPriority">
                         <option value="">Todas</option>
-                        <option value="Crítica">Crítica</option>
-                        <option value="Alta">Alta</option>
-                        <option value="Média">Média</option>
+                        <!-- Preenchido dinamicamente por options.js -->
                     </select>
                 </div>
             </div>
@@ -160,6 +152,15 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../static/js/main.js"></script>
+    <script src="../static/js/api.js"></script>
+    <script src="../static/js/options.js"></script>
     <script src="../static/js/dashboard.js"></script>
+    <script>
+        // Carregar opções dinamicamente e atualizar info do utilizador
+        document.addEventListener('DOMContentLoaded', async () => {
+            updateUserInfo();
+            await loadOptions();
+        });
+    </script>
 </body>
 </html>

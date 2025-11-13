@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth.js";
 import incidentRoutes from "./routes/incidents.js";
 import alertRoutes from "./routes/alerts.js";
 import metricsRoutes from "./routes/metrics.js";
+import optionsRoutes from "./routes/options.js";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/incidents", incidentRoutes);
 app.use("/api/alerts", alertRoutes);
 app.use("/api/metrics", metricsRoutes);
+app.use("/api/options", optionsRoutes);
 
 // 404 genérico
 app.use((req, res) => {

@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Incidente - Gestor de Incidentes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="../static/css/dashboard.css">
+    <style>
+        @keyframes slideOutRight {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+        }
+        .card {
+            border: none;
+            border-radius: 8px;
+        }
+        .form-select, .form-control {
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body class="dashboard">
+    <!-- Navbar -->
+    <nav class="dashboard-navbar">
+        <div class="navbar-content">
+            <h2 class="navbar-brand">🚨 Gestor de Incidentes</h2>
+            <div class="navbar-menu">
+                <a href="#" id="backLink">← Voltar</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div>
+                <h1 id="incidentTitle">Carregando...</h1>
+                <p style="color: #7f8c8d; margin: 0;">Detalhes do incidente</p>
+            </div>
+            <div class="user-info">
+                <div class="avatar" id="userAvatar">U</div>
+                <div class="user-details">
+                    <p class="user-name" id="userName">Utilizador</p>
+                    <p class="user-role" id="userRole">Perfil</p>
+                </div>
+                <button class="logout-btn" onclick="logout()">Sair</button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" style="text-align: center; padding: 3rem;">
+            <p>A carregar detalhes do incidente...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" style="display: none; text-align: center; padding: 3rem;">
+            <div class="alert alert-danger" role="alert">
+                <h4>Erro ao carregar incidente</h4>
+                <p id="errorMessage">O incidente não foi encontrado ou ocorreu um erro.</p>
+                <a href="#" id="errorBackLink" class="btn btn-primary">Voltar</a>
+            </div>
+        </div>
+
+        <!-- Incident Details -->
+        <div id="incidentDetails" style="display: none;">
+            <!-- Informações Principais -->
+            <div class="card" style="margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div class="card-header" style="background-color: #f8f9fa; border-bottom: 2px solid #e9ecef;">
+                    <h3 style="margin: 0;">📋 Informações do Incidente</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>ID do Incidente:</strong>
+                            <p id="incidentId" style="margin: 0.5rem 0; font-size: 1.2rem; color: #667eea;">-</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Status:</strong>
+                            <p id="incidentStatus" style="margin: 0.5rem 0;">
+                                <span class="status-badge" id="statusBadge">-</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Prioridade:</strong>
+                            <p id="incidentPriority" style="margin: 0.5rem 0;">
+                                <span class="priority-badge" id="priorityBadge">-</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Categoria:</strong>
+                            <p id="incidentCategory" style="margin: 0.5rem 0;">-</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Utilizadores Afetados:</strong>
+                            <p id="incidentAffected" style="margin: 0.5rem 0;">-</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Origem:</strong>
+                            <p id="incidentSource" style="margin: 0.5rem 0;">-</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Descrição -->
+            <div class="card" style="margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div class="card-header" style="background-color: #f8f9fa; border-bottom: 2px solid #e9ecef;">
+                    <h3 style="margin: 0;">📝 Descrição do Problema</h3>
+                </div>
+                <div class="card-body">
+                    <p id="incidentDescription" style="white-space: pre-wrap; line-height: 1.6;">-</p>
+                </div>
+            </div>
+
+            <!-- Informações de Atribuição e Datas -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card" style="margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div class="card-header" style="background-color: #f8f9fa; border-bottom: 2px solid #e9ecef;">
+                            <h3 style="margin: 0;">👥 Atribuição</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <strong>Criado por:</strong>
+                                <p id="incidentCreatedBy" style="margin: 0.5rem 0;">-</p>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Atribuído a:</strong>
+                                <p id="incidentAssignedTo" style="margin: 0.5rem 0;">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card" style="margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div class="card-header" style="background-color: #f8f9fa; border-bottom: 2px solid #e9ecef;">
+                            <h3 style="margin: 0;">📅 Datas</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <strong>Criado em:</strong>
+                                <p id="incidentCreatedAt" style="margin: 0.5rem 0;">-</p>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Última atualização:</strong>
+                                <p id="incidentUpdatedAt" style="margin: 0.5rem 0;">-</p>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Resolvido em:</strong>
+                                <p id="incidentResolvedAt" style="margin: 0.5rem 0;">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ações (consoante o role) -->
+            <div id="actionsSection" class="card" style="margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div class="card-header" style="background-color: #f8f9fa; border-bottom: 2px solid #e9ecef;">
+                    <h3 style="margin: 0;">⚙️ Ações</h3>
+                </div>
+                <div class="card-body">
+                    <div id="updateForm" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="updateStatus" class="form-label">Status:</label>
+                                <select id="updateStatus" class="form-select">
+                                    <option value="">Selecionar...</option>
+                                    <!-- Preenchido dinamicamente por options.js -->
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3" id="priorityUpdateSection" style="display: none;">
+                                <label for="updatePriority" class="form-label">Prioridade:</label>
+                                <select id="updatePriority" class="form-select">
+                                    <option value="">Selecionar...</option>
+                                    <!-- Preenchido dinamicamente por options.js -->
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3 d-flex align-items-end">
+                                <button class="btn btn-primary" onclick="updateIncident()" style="margin-right: 0.5rem;">
+                                    Atualizar
+                                </button>
+                                <button class="btn btn-secondary" onclick="cancelUpdate()">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="actionButtons">
+                        <button class="btn btn-primary" onclick="showUpdateForm()" id="editButton" style="display: none;">
+                            ✏️ Editar Status/Prioridade
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../static/js/main.js"></script>
+    <script src="../static/js/api.js"></script>
+    <script src="../static/js/options.js"></script>
+    <script>
+        const API_BASE_URL = "http://localhost:3001/api";
+        let currentIncident = null;
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verificar autenticação
+            currentUser = requireAuth();
+            if (!currentUser) return;
+
+            updateUserInfo();
+
+            // Obter ID do incidente da URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const incidentId = urlParams.get('id');
+
+            if (!incidentId) {
+                showError('ID do incidente não fornecido.');
+                return;
+            }
+
+            // Carregar opções dinamicamente
+            await loadOptions();
+
+            // Configurar link de volta
+            const backLink = document.getElementById('backLink');
+            const errorBackLink = document.getElementById('errorBackLink');
+            const referrer = document.referrer;
+            if (referrer && referrer.includes(window.location.hostname)) {
+                backLink.href = referrer;
+                errorBackLink.href = referrer;
+            } else {
+                // Default: voltar para o dashboard apropriado
+                if (currentUser.role === 'gestor') {
+                    backLink.href = 'dashboard-gestor.html';
+                    errorBackLink.href = 'dashboard-gestor.html';
+                } else if (currentUser.role === 'tecnico') {
+                    backLink.href = 'dashboard-tecnico.html';
+                    errorBackLink.href = 'dashboard-tecnico.html';
+                } else if (currentUser.role === 'sysadmin') {
+                    backLink.href = 'dashboard-sysadmin.html';
+                    errorBackLink.href = 'dashboard-sysadmin.html';
+                }
+            }
+
+            // Carregar detalhes do incidente
+            await loadIncidentDetails(incidentId);
+        });
+
+        async function loadIncidentDetails(id) {
+            try {
+                const incident = await getIncidentById(id);
+                
+                if (!incident) {
+                    showError('Incidente não encontrado.');
+                    return;
+                }
+
+                currentIncident = incident;
+                displayIncidentDetails(incident);
+            } catch (error) {
+                console.error('Erro ao carregar incidente:', error);
+                showError('Erro ao carregar os detalhes do incidente.');
+            }
+        }
+
+        function displayIncidentDetails(incident) {
+            // Esconder loading, mostrar detalhes
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('incidentDetails').style.display = 'block';
+
+            // Título
+            document.getElementById('incidentTitle').textContent = incident.title || 'Sem título';
+            document.getElementById('incidentId').textContent = `#${incident.id}`;
+
+            // Status
+            const status = incident.status || 'Desconhecido';
+            const statusBadge = document.getElementById('statusBadge');
+            statusBadge.textContent = status;
+            statusBadge.className = 'status-badge ' + status.toLowerCase().replace(/\s+/g, '-');
+            document.getElementById('updateStatus').value = status;
+
+            // Prioridade
+            const priority = incident.priority || 'Desconhecida';
+            const priorityBadge = document.getElementById('priorityBadge');
+            priorityBadge.textContent = priority;
+            priorityBadge.className = 'priority-badge ' + priority.toLowerCase().replace(/\s+/g, '-');
+            document.getElementById('updatePriority').value = priority;
+
+            // Categoria
+            document.getElementById('incidentCategory').textContent = incident.category || '-';
+
+            // Afetados
+            document.getElementById('incidentAffected').textContent = 
+                incident.affectedUsers != null ? incident.affectedUsers : '0';
+
+            // Origem
+            document.getElementById('incidentSource').textContent = 
+                incident.source === 'monitoring' ? 'Monitorização Automática' : 
+                incident.source === 'manual' ? 'Manual' : incident.source || '-';
+
+            // Descrição
+            document.getElementById('incidentDescription').textContent = 
+                incident.description || 'Sem descrição';
+
+            // Criado por
+            document.getElementById('incidentCreatedBy').textContent = 
+                incident.createdByName || 'Desconhecido';
+
+            // Atribuído a
+            document.getElementById('incidentAssignedTo').textContent = 
+                incident.assignedToName || 'Não atribuído';
+
+            // Datas
+            const createdAt = incident.createdAt || incident.created_at;
+            document.getElementById('incidentCreatedAt').textContent = 
+                createdAt ? formatDate(createdAt) : '-';
+
+            const updatedAt = incident.updatedAt || incident.updated_at;
+            document.getElementById('incidentUpdatedAt').textContent = 
+                updatedAt ? formatDate(updatedAt) : '-';
+
+            const resolvedAt = incident.resolvedAt || incident.resolved_at;
+            document.getElementById('incidentResolvedAt').textContent = 
+                resolvedAt ? formatDate(resolvedAt) : 'Não resolvido';
+
+            // Mostrar botão de edição consoante o role e permissões
+            const editButton = document.getElementById('editButton');
+            if (currentUser) {
+                // Técnico pode editar se for o criador ou se estiver atribuído a ele
+                if (currentUser.role === 'tecnico') {
+                    const canEdit = (incident.createdBy === currentUser.id) || 
+                                   (incident.assignedTo === currentUser.id);
+                    if (canEdit) {
+                        editButton.style.display = 'inline-block';
+                    }
+                } 
+                // Gestor e SysAdmin podem sempre editar
+                else if (currentUser.role === 'gestor' || currentUser.role === 'sysadmin') {
+                    editButton.style.display = 'inline-block';
+                    // Gestor e SysAdmin podem alterar prioridade
+                    document.getElementById('priorityUpdateSection').style.display = 'block';
+                }
+            }
+        }
+
+        function showUpdateForm() {
+            document.getElementById('updateForm').style.display = 'block';
+            document.getElementById('editButton').style.display = 'none';
+        }
+
+        function cancelUpdate() {
+            document.getElementById('updateForm').style.display = 'none';
+            document.getElementById('editButton').style.display = 'inline-block';
+            // Resetar valores
+            if (currentIncident) {
+                document.getElementById('updateStatus').value = currentIncident.status || '';
+                document.getElementById('updatePriority').value = currentIncident.priority || '';
+            }
+        }
+
+        async function updateIncident() {
+            const status = document.getElementById('updateStatus').value;
+            const priority = document.getElementById('updatePriority').value;
+
+            if (!status && !priority) {
+                alert('Por favor, selecione pelo menos um campo para atualizar.');
+                return;
+            }
+
+            const updates = {};
+            if (status) updates.status = status;
+            if (priority) updates.priority = priority;
+
+            try {
+                const updated = await updateIncidentAPI(currentIncident.id, updates);
+                
+                if (updated) {
+                    currentIncident = updated;
+                    displayIncidentDetails(updated);
+                    cancelUpdate();
+                    showNotification('Incidente atualizado com sucesso! ✅', 'success');
+                } else {
+                    showNotification('Erro ao atualizar incidente.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar:', error);
+                showNotification('Erro ao atualizar incidente.', 'error');
+            }
+        }
+
+        async function updateIncidentAPI(id, updates) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/incidents/${id}`, {
+                    method: 'PATCH',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(updates)
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Erro ao atualizar incidente:', error);
+                return null;
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            notification.style.position = 'fixed';
+            notification.style.top = '1rem';
+            notification.style.right = '1rem';
+            notification.style.zIndex = '1000';
+            notification.style.padding = '1rem 1.5rem';
+            notification.style.borderRadius = '8px';
+            notification.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+
+            if (type === 'success') {
+                notification.style.backgroundColor = '#e5f5e5';
+                notification.style.color = '#27ae60';
+                notification.style.borderLeft = '4px solid #27ae60';
+            } else if (type === 'error') {
+                notification.style.backgroundColor = '#ffe5e5';
+                notification.style.color = '#c0392b';
+                notification.style.borderLeft = '4px solid #c0392b';
+            } else {
+                notification.style.backgroundColor = '#d1ecf1';
+                notification.style.color = '#0c5460';
+                notification.style.borderLeft = '4px solid #0c5460';
+            }
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease-out';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
+

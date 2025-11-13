@@ -41,27 +41,21 @@
                 </div>
 
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="category">Categoria *</label>
-                        <select id="category" name="category" required>
-                            <option value="">Selecione uma categoria</option>
-                            <option value="Email/Comunicações">Email/Comunicações</option>
-                            <option value="Hardware/Impressoras">Hardware/Impressoras</option>
-                            <option value="Software/CRM">Software/CRM</option>
-                            <option value="Redes/Conectividade">Redes/Conectividade</option>
-                        </select>
-                    </div>
+                <div class="form-group">
+                    <label for="category">Categoria *</label>
+                    <select id="category" name="category" required>
+                        <option value="">Selecione uma categoria</option>
+                        <!-- Preenchido dinamicamente por options.js -->
+                    </select>
+                </div>
 
-                    <div class="form-group">
-                        <label for="priority">Prioridade *</label>
-                        <select id="priority" name="priority" required>
-                            <option value="">Selecione prioridade</option>
-                            <option value="Baixa">Baixa</option>
-                            <option value="Média">Média</option>
-                            <option value="Alta">Alta</option>
-                            <option value="Crítica">Crítica</option>
-                        </select>
-                    </div>
+                <div class="form-group">
+                    <label for="priority">Prioridade *</label>
+                    <select id="priority" name="priority" required>
+                        <option value="">Selecione prioridade</option>
+                        <!-- Preenchido dinamicamente por options.js -->
+                    </select>
+                </div>
                 </div>
 
                 <div class="form-group">
@@ -79,10 +73,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../static/js/main.js"></script>
+    <script src="../static/js/api.js"></script>
+    <script src="../static/js/options.js"></script>
     <script>
         // Garante que só utilizadores autenticados acedem
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             requireAuth();
+            // Carregar opções dinamicamente
+            await loadOptions();
         });
 
         async function submitIncident(event) {
@@ -129,8 +127,18 @@
                 const data = await res.json();
                 console.log("Incidente criado:", data);
 
-                alert("Incidente registado com sucesso!");
-                window.location.href = "dashboard-tecnico.html";
+                // Determinar qual dashboard mostrar baseado no role do utilizador
+                const user = getCurrentUser();
+                let dashboardUrl = "dashboard-tecnico.html";
+                if (user && user.role === 'gestor') {
+                    dashboardUrl = "dashboard-gestor.html";
+                } else if (user && user.role === 'sysadmin') {
+                    dashboardUrl = "dashboard-sysadmin.html";
+                }
+
+                // Adicionar parâmetro para forçar reload dos dados
+                const timestamp = new Date().getTime();
+                window.location.href = `${dashboardUrl}?reload=${timestamp}&created=true`;
             } catch (err) {
                 console.error("Erro no servidor:", err);
                 alert("Erro no servidor.");
