@@ -25,6 +25,17 @@
         .form-select, .form-control {
             border-radius: 6px;
         }
+        .action-block {
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1.25rem;
+            background-color: #fff;
+            margin-bottom: 1rem;
+        }
+        .action-block h4 {
+            margin-bottom: 0.75rem;
+            font-size: 1.05rem;
+        }
     </style>
 </head>
 <body class="dashboard">
@@ -168,36 +179,37 @@
                     <h3 style="margin: 0;">⚙️ Ações</h3>
                 </div>
                 <div class="card-body">
-                    <div id="updateForm" style="display: none;">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="updateStatus" class="form-label">Status:</label>
-                                <select id="updateStatus" class="form-select">
-                                    <option value="">Selecionar...</option>
-                                    <!-- Preenchido dinamicamente por options.js -->
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3" id="priorityUpdateSection" style="display: none;">
-                                <label for="updatePriority" class="form-label">Prioridade:</label>
+                    <div id="priorityAction" class="action-block" style="display: none;">
+                        <h4>Alterar prioridade</h4>
+                        <p style="color:#7f8c8d; margin-bottom:0.75rem;">
+                            Atualize a prioridade para refletir o impacto atual do incidente.
+                        </p>
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-6">
+                                <label for="updatePriority" class="form-label">Nova prioridade</label>
                                 <select id="updatePriority" class="form-select">
                                     <option value="">Selecionar...</option>
                                     <!-- Preenchido dinamicamente por options.js -->
                                 </select>
                             </div>
-                            <div class="col-md-4 mb-3 d-flex align-items-end">
-                                <button class="btn btn-primary" onclick="updateIncident()" style="margin-right: 0.5rem;">
-                                    Atualizar
-                                </button>
-                                <button class="btn btn-secondary" onclick="cancelUpdate()">
-                                    Cancelar
+                            <div class="col-md-6">
+                                <button class="btn btn-primary w-100" onclick="handlePriorityUpdate()">
+                                    Guardar prioridade
                                 </button>
                             </div>
                         </div>
                     </div>
-                    <div id="actionButtons">
-                        <button class="btn btn-primary" onclick="showUpdateForm()" id="editButton" style="display: none;">
-                            ✏️ Editar Status/Prioridade
+                    <div id="resolveAction" class="action-block" style="display: none;">
+                        <h4>Finalizar incidente</h4>
+                        <p id="resolveActionText" style="color:#7f8c8d; margin-bottom:0.75rem;">
+                            Utilize esta opção quando o incidente estiver resolvido.
+                        </p>
+                        <button id="resolveButton" class="btn btn-success" onclick="handleResolveIncident()">
+                            Finalizar e marcar como resolvido
                         </button>
+                    </div>
+                    <div id="noActionsMessage" style="display:none; color:#7f8c8d;">
+                        Não tem permissões para efetuar alterações neste incidente.
                     </div>
                 </div>
             </div>
@@ -209,7 +221,9 @@
     <script src="../static/js/api.js"></script>
     <script src="../static/js/options.js"></script>
     <script>
-        const API_BASE_URL = "http://localhost:3001/api";
+        const INCIDENTS_API_BASE = typeof API_BASE_URL !== 'undefined'
+            ? API_BASE_URL
+            : "http://localhost:3001/api";
         let currentIncident = null;
         let currentUser = null;
 
@@ -288,14 +302,16 @@
             const statusBadge = document.getElementById('statusBadge');
             statusBadge.textContent = status;
             statusBadge.className = 'status-badge ' + status.toLowerCase().replace(/\s+/g, '-');
-            document.getElementById('updateStatus').value = status;
 
             // Prioridade
             const priority = incident.priority || 'Desconhecida';
             const priorityBadge = document.getElementById('priorityBadge');
             priorityBadge.textContent = priority;
             priorityBadge.className = 'priority-badge ' + priority.toLowerCase().replace(/\s+/g, '-');
-            document.getElementById('updatePriority').value = priority;
+            const prioritySelect = document.getElementById('updatePriority');
+            if (prioritySelect) {
+                prioritySelect.value = priority;
+            }
 
             // Categoria
             document.getElementById('incidentCategory').textContent = incident.category || '-';
@@ -334,74 +350,101 @@
             document.getElementById('incidentResolvedAt').textContent = 
                 resolvedAt ? formatDate(resolvedAt) : 'Não resolvido';
 
-            // Mostrar botão de edição consoante o role e permissões
-            const editButton = document.getElementById('editButton');
-            if (currentUser) {
-                // Técnico pode editar se for o criador ou se estiver atribuído a ele
-                if (currentUser.role === 'tecnico') {
-                    const canEdit = (incident.createdBy === currentUser.id) || 
-                                   (incident.assignedTo === currentUser.id);
-                    if (canEdit) {
-                        editButton.style.display = 'inline-block';
-                    }
-                } 
-                // Gestor e SysAdmin podem sempre editar
-                else if (currentUser.role === 'gestor' || currentUser.role === 'sysadmin') {
-                    editButton.style.display = 'inline-block';
-                    // Gestor e SysAdmin podem alterar prioridade
-                    document.getElementById('priorityUpdateSection').style.display = 'block';
+            configureActions(incident);
+        }
+
+        function canManageIncident(incident) {
+            if (!currentUser) return false;
+            if (currentUser.role === 'gestor' || currentUser.role === 'sysadmin') {
+                return true;
+            }
+            if (currentUser.role === 'tecnico') {
+                return incident.createdBy === currentUser.id || incident.assignedTo === currentUser.id;
+            }
+            return false;
+        }
+
+        function configureActions(incident) {
+            const priorityAction = document.getElementById('priorityAction');
+            const resolveAction = document.getElementById('resolveAction');
+            const noActionsMessage = document.getElementById('noActionsMessage');
+            const resolveButton = document.getElementById('resolveButton');
+            const resolveActionText = document.getElementById('resolveActionText');
+
+            const canManage = canManageIncident(incident);
+            if (priorityAction) priorityAction.style.display = canManage ? 'block' : 'none';
+            if (resolveAction) resolveAction.style.display = canManage ? 'block' : 'none';
+            if (noActionsMessage) noActionsMessage.style.display = canManage ? 'none' : 'block';
+
+            if (resolveButton) {
+                const alreadyResolved = (incident.status || '').toLowerCase() === 'resolvido';
+                resolveButton.disabled = alreadyResolved;
+                resolveButton.textContent = alreadyResolved ? 'Incidente já resolvido' : 'Finalizar e marcar como resolvido';
+                if (resolveActionText) {
+                    resolveActionText.textContent = alreadyResolved
+                        ? 'Este incidente já foi marcado como resolvido.'
+                        : 'Utilize esta opção quando o incidente estiver resolvido.';
                 }
             }
         }
 
-        function showUpdateForm() {
-            document.getElementById('updateForm').style.display = 'block';
-            document.getElementById('editButton').style.display = 'none';
-        }
+        async function handlePriorityUpdate() {
+            if (!currentIncident) return;
+            const prioritySelect = document.getElementById('updatePriority');
+            if (!prioritySelect) return;
 
-        function cancelUpdate() {
-            document.getElementById('updateForm').style.display = 'none';
-            document.getElementById('editButton').style.display = 'inline-block';
-            // Resetar valores
-            if (currentIncident) {
-                document.getElementById('updateStatus').value = currentIncident.status || '';
-                document.getElementById('updatePriority').value = currentIncident.priority || '';
-            }
-        }
+            const newPriority = prioritySelect.value;
 
-        async function updateIncident() {
-            const status = document.getElementById('updateStatus').value;
-            const priority = document.getElementById('updatePriority').value;
-
-            if (!status && !priority) {
-                alert('Por favor, selecione pelo menos um campo para atualizar.');
+            if (!newPriority) {
+                alert('Selecione uma prioridade para continuar.');
                 return;
             }
 
-            const updates = {};
-            if (status) updates.status = status;
-            if (priority) updates.priority = priority;
+            if (newPriority === currentIncident.priority) {
+                showNotification('A prioridade já está definida com esse valor.', 'info');
+                return;
+            }
 
             try {
-                const updated = await updateIncidentAPI(currentIncident.id, updates);
-                
+                const updated = await updateIncidentAPI(currentIncident.id, { priority: newPriority });
                 if (updated) {
                     currentIncident = updated;
                     displayIncidentDetails(updated);
-                    cancelUpdate();
-                    showNotification('Incidente atualizado com sucesso! ✅', 'success');
+                    showNotification('Prioridade atualizada com sucesso! ✅', 'success');
                 } else {
-                    showNotification('Erro ao atualizar incidente.', 'error');
+                    showNotification('Não foi possível atualizar a prioridade.', 'error');
                 }
             } catch (error) {
-                console.error('Erro ao atualizar:', error);
-                showNotification('Erro ao atualizar incidente.', 'error');
+                console.error('Erro ao atualizar prioridade:', error);
+                showNotification('Erro ao atualizar prioridade.', 'error');
+            }
+        }
+
+        async function handleResolveIncident() {
+            if (!currentIncident) return;
+            if ((currentIncident.status || '').toLowerCase() === 'resolvido') return;
+
+            const confirmResolve = confirm('Tem a certeza que pretende finalizar este incidente?');
+            if (!confirmResolve) return;
+
+            try {
+                const updated = await updateIncidentAPI(currentIncident.id, { status: 'Resolvido' });
+                if (updated) {
+                    currentIncident = updated;
+                    displayIncidentDetails(updated);
+                    showNotification('Incidente marcado como resolvido! ✅', 'success');
+                } else {
+                    showNotification('Não foi possível finalizar o incidente.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao finalizar incidente:', error);
+                showNotification('Erro ao finalizar incidente.', 'error');
             }
         }
 
         async function updateIncidentAPI(id, updates) {
             try {
-                const response = await fetch(`${API_BASE_URL}/incidents/${id}`, {
+                const response = await fetch(`${INCIDENTS_API_BASE}/incidents/${id}`, {
                     method: 'PATCH',
                     headers: getAuthHeaders(),
                     body: JSON.stringify(updates)
