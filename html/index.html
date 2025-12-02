@@ -83,6 +83,12 @@
     <script>
         const API_BASE_URL = "http://localhost:3001/api";
 
+        // Função para validar email
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
         function showAlert(message, type = 'danger') {
             const alertContainer = document.getElementById('alertContainer');
             alertContainer.innerHTML = '';
@@ -109,8 +115,19 @@
             const password = document.getElementById('password').value.trim();
             const rememberMe = document.getElementById('rememberMe').checked;
 
+            // Validações
             if (!email || !password) {
                 showAlert('Por favor, preenche email e password.', 'danger');
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                showAlert('Email inválido. Por favor, verifica o formato.', 'danger');
+                return;
+            }
+
+            if (password.length < 3) {
+                showAlert('Password deve ter pelo menos 3 caracteres.', 'danger');
                 return;
             }
 
@@ -126,7 +143,8 @@
                 });
 
                 if (!res.ok) {
-                    showAlert('Email ou password inválidos.', 'danger');
+                    const errorData = await res.json();
+                    showAlert(errorData.message || 'Email ou password inválidos.', 'danger');
                 } else {
                     const data = await res.json();
 

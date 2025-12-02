@@ -100,8 +100,37 @@
 
             const affectedUsers = parseInt(affectedUsersValue, 10);
 
+            // Validações melhoradas
             if (!title || !description || !category || !priority || !affectedUsers || affectedUsers < 1) {
                 alert("Preenche todos os campos obrigatórios com valores válidos.");
+                return;
+            }
+
+            // Validar comprimento do título
+            if (title.length < 5) {
+                alert("O título deve ter pelo menos 5 caracteres.");
+                return;
+            }
+
+            if (title.length > 200) {
+                alert("O título não pode ter mais de 200 caracteres.");
+                return;
+            }
+
+            // Validar comprimento da descrição
+            if (description.length < 10) {
+                alert("A descrição deve ter pelo menos 10 caracteres.");
+                return;
+            }
+
+            if (description.length > 5000) {
+                alert("A descrição não pode ter mais de 5000 caracteres.");
+                return;
+            }
+
+            // Validar que utilisadores afetados é um número positivo
+            if (!Number.isInteger(affectedUsers) || affectedUsers < 1 || affectedUsers > 100000) {
+                alert("Número de utilizadores afetados deve estar entre 1 e 100000.");
                 return;
             }
 
@@ -125,7 +154,6 @@
                 }
 
                 const data = await res.json();
-                console.log("Incidente criado:", data);
 
                 // Determinar qual dashboard mostrar baseado no role do utilizador
                 const user = getCurrentUser();
