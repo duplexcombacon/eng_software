@@ -8,6 +8,7 @@ import alertRoutes from "./routes/alerts.js";
 import metricsRoutes from "./routes/metrics.js";
 import optionsRoutes from "./routes/options.js";
 import commentRoutes from "./routes/comments.js";
+import nagiosWebhookRoutes from "./routes/nagios-webhook.js";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use("/api/incidents", commentRoutes);
 app.use("/api/alerts", alertRoutes);
 app.use("/api/metrics", metricsRoutes);
 app.use("/api/options", optionsRoutes);
+app.use("/api/nagios", nagiosWebhookRoutes);
 
 // 404 genérico
 app.use((req, res) => {
