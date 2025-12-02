@@ -121,35 +121,26 @@
             </div>
         </div>
 
-        <!-- Gráficos (placeholders, ligados aos dados se quiserem depois) -->
+        <!-- Gráficos -->
         <div class="charts-grid">
             <div class="chart-container">
                 <h3 class="chart-title">📈 Incidentes por Prioridade</h3>
-                <div class="placeholder-chart">
-                    Gráfico: Distribuição por Prioridade
-                    <br>(pode ser ligado à API futuramente)
-                </div>
+                <canvas id="chartGestorPriority"></canvas>
             </div>
 
             <div class="chart-container">
                 <h3 class="chart-title">🏷️ Incidentes por Categoria</h3>
-                <div class="placeholder-chart">
-                    Gráfico: Distribuição por Categoria
-                </div>
+                <canvas id="chartGestorCategory"></canvas>
             </div>
 
             <div class="chart-container">
                 <h3 class="chart-title">📊 Incidentes por Status</h3>
-                <div class="placeholder-chart">
-                    Gráfico: Distribuição por Status
-                </div>
+                <canvas id="chartGestorStatus"></canvas>
             </div>
 
             <div class="chart-container">
                 <h3 class="chart-title">⏳ Evolução do MTTR</h3>
-                <div class="placeholder-chart">
-                    Gráfico: Tendência de MTTR
-                </div>
+                <canvas id="chartGestorMttr"></canvas>
             </div>
         </div>
 
@@ -177,6 +168,32 @@
             </div>
         </div>
 
+        <!-- Secção de Comentários do Incidente Selecionado -->
+        <div class="table-container" id="commentsSection" style="display: none; margin-top: 2rem;">
+            <h3 class="table-title">💬 Comentários do Incidente #<span id="selectedIncidentId"></span></h3>
+            
+            <!-- Lista de Comentários -->
+            <div id="commentsList" style="margin-bottom: 1.5rem; max-height: 300px; overflow-y: auto;">
+                <!-- Preenchido por JavaScript -->
+            </div>
+
+            <!-- Formulário para adicionar novo comentário -->
+            <div style="border-top: 1px solid #e0e0e0; padding-top: 1rem;">
+                <form id="commentForm">
+                    <div style="display: flex; gap: 0.5rem;">
+                        <textarea 
+                            id="commentText" 
+                            placeholder="Adicionar um comentário..." 
+                            style="flex: 1; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical; min-height: 80px;"
+                        ></textarea>
+                        <button type="submit" class="btn-submit" style="height: fit-content; padding: 0.75rem 1.5rem;">
+                            Enviar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Empty State -->
         <div id="emptyState" class="empty-state" style="display: none;">
             <div class="empty-state-icon">✅</div>
@@ -191,6 +208,7 @@
     <script src="../static/js/main.js"></script>
     <script src="../static/js/api.js"></script>
     <script src="../static/js/options.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
     <script src="../static/js/dashboard.js"></script>
     <script>
         // Carregar opções dinamicamente e atualizar info do utilizador

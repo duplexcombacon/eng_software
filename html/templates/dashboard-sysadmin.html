@@ -110,35 +110,23 @@
         <!-- Gráficos -->
         <div class="charts-grid">
             <div class="chart-container">
-                <h3 class="chart-title">🌡️ CPU & Memória (BD Principal)</h3>
-                <div class="placeholder-chart">
-                    Gráfico: Utilização de Recursos
-                    <br>(Chart.js / Canvas)
-                </div>
+                <h3 class="chart-title">🌡️ Incidentes por Severidade</h3>
+                <canvas id="chartSysadminSeverity"></canvas>
             </div>
 
             <div class="chart-container">
-                <h3 class="chart-title">📈 Distribuição de Alertas</h3>
-                <div class="placeholder-chart">
-                    Gráfico: Por Severidade
-                    <br>(Chart.js / Canvas)
-                </div>
+                <h3 class="chart-title">📈 Incidentes Escalados por Categoria</h3>
+                <canvas id="chartSysadminCategory"></canvas>
             </div>
 
             <div class="chart-container">
-                <h3 class="chart-title">⏱️ Tempo de Resposta (APIs)</h3>
-                <div class="placeholder-chart">
-                    Gráfico: Latência por Endpoint
-                    <br>(Chart.js / Canvas)
-                </div>
+                <h3 class="chart-title">⏱️ Tempo Médio de Resolução (Escalados)</h3>
+                <canvas id="chartSysadminMttr"></canvas>
             </div>
 
             <div class="chart-container">
-                <h3 class="chart-title">🔄 Uptime dos Servidores</h3>
-                <div class="placeholder-chart">
-                    Gráfico: Disponibilidade Mensal
-                    <br>(Chart.js / Canvas)
-                </div>
+                <h3 class="chart-title">🔄 Taxa de Resolução</h3>
+                <canvas id="chartSysadminResolvedRate"></canvas>
             </div>
         </div>
 
@@ -166,6 +154,32 @@
             </div>
         </div>
 
+        <!-- Secção de Comentários do Incidente Selecionado -->
+        <div class="table-container" id="commentsSection" style="display: none; margin-top: 2rem;">
+            <h3 class="table-title">💬 Comentários do Incidente #<span id="selectedIncidentId"></span></h3>
+            
+            <!-- Lista de Comentários -->
+            <div id="commentsList" style="margin-bottom: 1.5rem; max-height: 300px; overflow-y: auto;">
+                <!-- Preenchido por JavaScript -->
+            </div>
+
+            <!-- Formulário para adicionar novo comentário -->
+            <div style="border-top: 1px solid #e0e0e0; padding-top: 1rem;">
+                <form id="commentForm">
+                    <div style="display: flex; gap: 0.5rem;">
+                        <textarea 
+                            id="commentText" 
+                            placeholder="Adicionar um comentário..." 
+                            style="flex: 1; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical; min-height: 80px;"
+                        ></textarea>
+                        <button type="submit" class="btn-submit" style="height: fit-content; padding: 0.75rem 1.5rem;">
+                            Enviar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Status dos Sistemas -->
         <!-- Nota: Esta secção foi removida pois os dados de infraestrutura não estão disponíveis na base de dados atual -->
         <!-- Se precisar de mostrar status de sistemas, será necessário criar uma nova tabela e endpoint na API -->
@@ -182,6 +196,7 @@
     <script src="../static/js/main.js"></script>
     <script src="../static/js/api.js"></script>
     <script src="../static/js/options.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
     <script src="../static/js/dashboard.js"></script>
     <script>
         // Carregar opções dinamicamente e atualizar info do utilizador

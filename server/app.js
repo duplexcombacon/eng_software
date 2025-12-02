@@ -7,6 +7,7 @@ import incidentRoutes from "./routes/incidents.js";
 import alertRoutes from "./routes/alerts.js";
 import metricsRoutes from "./routes/metrics.js";
 import optionsRoutes from "./routes/options.js";
+import commentRoutes from "./routes/comments.js";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(express.json());
 // Rotas principais da API
 app.use("/api/auth", authRoutes);
 app.use("/api/incidents", incidentRoutes);
+app.use("/api/incidents", commentRoutes);
 app.use("/api/alerts", alertRoutes);
 app.use("/api/metrics", metricsRoutes);
 app.use("/api/options", optionsRoutes);

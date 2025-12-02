@@ -276,6 +276,9 @@ body.dashboard {
     border-radius: 8px;
     padding: 1.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    width: 100%;
+    min-height: 300px;
 }
 
 .chart-title {
@@ -283,7 +286,7 @@ body.dashboard {
     font-weight: 600;
     color: #2c3e50;
     margin-top: 0;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .placeholder-chart {
@@ -297,6 +300,12 @@ body.dashboard {
     font-size: 14px;
     text-align: center;
     padding: 1rem;
+}
+
+/* Canvas dos gráficos - dimensionar proporcionalmente */
+.chart-container canvas {
+    max-width: 100% !important;
+    height: auto !important;
 }
 
 /* ==========================================

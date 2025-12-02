@@ -8,6 +8,11 @@ let currentUser = null;
 let lastReloadTime = 0;
 const RELOAD_THROTTLE = 2000; // Recarregar no máximo a cada 2 segundos
 
+// Referências para gráficos Chart.js (evitar recriar múltiplas vezes)
+let gestorCharts = {};
+let tecnicoCharts = {};
+let sysadminCharts = {};
+
 // ============================================
 // Inicialização
 // ============================================
@@ -19,6 +24,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Preencher info do utilizador (nome, avatar, título)
     updateUserInfo();
+
+    // Setup do formulário de comentários
+    setupCommentForm();
 
     // Carregar incidentes da API
     try {
@@ -93,6 +101,9 @@ async function loadData() {
 
     // Renderizar tabela
     renderIncidentsTable();
+    
+    // Setup para cliques nas linhas (comentários)
+    setupIncidentRowClick();
 }
 
 // ============================================
@@ -131,6 +142,9 @@ function renderGestorDashboard() {
     if (openEl) openEl.textContent = metrics.open;
     if (resolvedEl) resolvedEl.textContent = metrics.resolved;
     if (impactedEl) impactedEl.textContent = metrics.totalImpacted;
+
+    // Atualizar gráficos do gestor
+    updateGestorCharts();
 }
 
 // ============================================
@@ -175,6 +189,9 @@ function renderTecnicoDashboard() {
 
     // Atualizar lista filtrada com os incidentes do técnico
     filteredIncidents = myIncidents;
+
+    // Atualizar gráfico da técnica
+    updateTecnicoCharts(myIncidents);
 }
 
 // ============================================
@@ -222,6 +239,433 @@ function renderSysAdminDashboard() {
     }
 
     filteredIncidents = escalatedIncidents;
+
+    // Atualizar gráficos do sysadmin
+    updateSysadminCharts(escalatedIncidents, incidents);
+}
+
+// ============================================
+// Gráficos Chart.js - Gestor
+// ============================================
+
+function createOrUpdateChart(store, key, ctx, config) {
+    if (!ctx || typeof Chart === "undefined") return;
+    if (store[key]) {
+        store[key].data = config.data;
+        if (config.options) {
+            store[key].options = config.options;
+        }
+        store[key].update();
+        return;
+    }
+    store[key] = new Chart(ctx, config);
+}
+
+function updateGestorCharts() {
+    const priorityCanvas = document.getElementById("chartGestorPriority");
+    const categoryCanvas = document.getElementById("chartGestorCategory");
+    const statusCanvas = document.getElementById("chartGestorStatus");
+    const mttrCanvas = document.getElementById("chartGestorMttr");
+
+    if (!priorityCanvas && !categoryCanvas && !statusCanvas && !mttrCanvas) return;
+
+    const countsBy = (items, field) => {
+        const map = {};
+        items.forEach((inc) => {
+            const key = inc[field] || "Desconhecido";
+            map[key] = (map[key] || 0) + 1;
+        });
+        return map;
+    };
+
+    // Prioridade
+    if (priorityCanvas) {
+        const dataMap = countsBy(incidents, "priority");
+        const labels = Object.keys(dataMap);
+        const values = Object.values(dataMap);
+        createOrUpdateChart(
+            gestorCharts,
+            "priority",
+            priorityCanvas,
+            {
+                type: "doughnut",
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            data: values,
+                            backgroundColor: ["#2ecc71", "#3498db", "#f1c40f", "#e74c3c"],
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                },
+            }
+        );
+    }
+
+    // Categoria
+    if (categoryCanvas) {
+        const dataMap = countsBy(incidents, "category");
+        const labels = Object.keys(dataMap);
+        const values = Object.values(dataMap);
+        createOrUpdateChart(
+            gestorCharts,
+            "category",
+            categoryCanvas,
+            {
+                type: "bar",
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: "Incidentes",
+                            data: values,
+                            backgroundColor: "#667eea",
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0 } },
+                    },
+                },
+            }
+        );
+    }
+
+    // Status
+    if (statusCanvas) {
+        const dataMap = countsBy(incidents, "status");
+        const labels = Object.keys(dataMap);
+        const values = Object.values(dataMap);
+        createOrUpdateChart(
+            gestorCharts,
+            "status",
+            statusCanvas,
+            {
+                type: "bar",
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: "Incidentes",
+                            data: values,
+                            backgroundColor: "#27ae60",
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0 } },
+                    },
+                },
+            }
+        );
+    }
+
+    // MTTR por mês (linha)
+    if (mttrCanvas) {
+        const byMonth = {};
+        incidents.forEach((inc) => {
+            const statusResolved =
+                inc.status === "Resolvido" || inc.status === "Fechado";
+            const createdRaw = inc.createdAt || inc.created_at;
+            const resolvedRaw = inc.resolvedAt || inc.resolved_at;
+            if (!statusResolved || !createdRaw || !resolvedRaw) return;
+            const created = new Date(createdRaw);
+            const resolved = new Date(resolvedRaw);
+            if (isNaN(created) || isNaN(resolved)) return;
+            const key = `${created.getFullYear()}-${String(
+                created.getMonth() + 1
+            ).padStart(2, "0")}`;
+            const hours = (resolved - created) / (1000 * 60 * 60);
+            if (hours <= 0) return;
+            if (!byMonth[key]) {
+                byMonth[key] = { totalHours: 0, count: 0 };
+            }
+            byMonth[key].totalHours += hours;
+            byMonth[key].count += 1;
+        });
+
+        const labels = Object.keys(byMonth).sort();
+        const values = labels.map(
+            (m) => byMonth[m].totalHours / byMonth[m].count
+        );
+
+        // Validação: se não houver dados, mostrar placeholder
+        if (labels.length === 0) {
+            mttrCanvas.style.display = 'none';
+            const placeholder = document.createElement('div');
+            placeholder.style.cssText = 'height: 300px; display: flex; align-items: center; justify-content: center; color: #95a5a6;';
+            placeholder.textContent = 'Sem dados de MTTR (nenhum incidente resolvido)';
+            mttrCanvas.parentNode.insertBefore(placeholder, mttrCanvas.nextSibling);
+            return;
+        }
+
+        createOrUpdateChart(
+            gestorCharts,
+            "mttr",
+            mttrCanvas,
+            {
+                type: "line",
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: "MTTR (h)",
+                            data: values,
+                            fill: false,
+                            borderColor: "#e67e22",
+                            tension: 0.2,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: { beginAtZero: true },
+                    },
+                },
+            }
+        );
+    }
+}
+
+// ============================================
+// Gráficos Chart.js - Técnica
+// ============================================
+
+function updateTecnicoCharts(myIncidents) {
+    const mttrCanvas = document.getElementById("chartTecnicoMttr");
+    if (!mttrCanvas || typeof Chart === "undefined") return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const todaysResolved = myIncidents.filter((inc) => {
+        const resolvedRaw = inc.resolvedAt || inc.resolved_at;
+        if (!resolvedRaw) return false;
+        const resolved = new Date(resolvedRaw);
+        if (isNaN(resolved)) return false;
+        return resolved >= today;
+    });
+
+    let mttr = 0;
+    if (todaysResolved.length > 0) {
+        const totalHours = todaysResolved.reduce((sum, inc) => {
+            const created = new Date(inc.createdAt || inc.created_at);
+            const resolved = new Date(inc.resolvedAt || inc.resolved_at);
+            if (isNaN(created) || isNaN(resolved)) return sum;
+            const hours = (resolved - created) / (1000 * 60 * 60);
+            return sum + (hours > 0 ? hours : 0);
+        }, 0);
+        mttr = totalHours / todaysResolved.length;
+    }
+
+    createOrUpdateChart(
+        tecnicoCharts,
+        "mttr",
+        mttrCanvas,
+        {
+            type: "bar",
+            data: {
+                labels: ["Hoje"],
+                datasets: [
+                    {
+                        label: "MTTR (h)",
+                        data: [mttr],
+                        backgroundColor: "#9b59b6",
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: { beginAtZero: true },
+                },
+            },
+        }
+    );
+}
+
+// ============================================
+// Gráficos Chart.js - SysAdmin
+// ============================================
+
+function updateSysadminCharts(escalatedIncidents, allIncidents) {
+    const severityCanvas = document.getElementById("chartSysadminSeverity");
+    const categoryCanvas = document.getElementById("chartSysadminCategory");
+    const mttrCanvas = document.getElementById("chartSysadminMttr");
+    const resolvedRateCanvas = document.getElementById(
+        "chartSysadminResolvedRate"
+    );
+
+    if (
+        !severityCanvas &&
+        !categoryCanvas &&
+        !mttrCanvas &&
+        !resolvedRateCanvas
+    ) {
+        return;
+    }
+
+    const countsBy = (items, field) => {
+        const map = {};
+        items.forEach((inc) => {
+            const key = inc[field] || "Desconhecido";
+            map[key] = (map[key] || 0) + 1;
+        });
+        return map;
+    };
+
+    // Severidade (prioridade) dos escalados
+    if (severityCanvas) {
+        const dataMap = countsBy(escalatedIncidents, "priority");
+        const labels = Object.keys(dataMap);
+        const values = Object.values(dataMap);
+        createOrUpdateChart(
+            sysadminCharts,
+            "severity",
+            severityCanvas,
+            {
+                type: "doughnut",
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            data: values,
+                            backgroundColor: ["#e74c3c", "#f1c40f", "#3498db"],
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                },
+            }
+        );
+    }
+
+    // Categoria dos escalados
+    if (categoryCanvas) {
+        const dataMap = countsBy(escalatedIncidents, "category");
+        const labels = Object.keys(dataMap);
+        const values = Object.values(dataMap);
+        createOrUpdateChart(
+            sysadminCharts,
+            "category",
+            categoryCanvas,
+            {
+                type: "bar",
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: "Incidentes Escalados",
+                            data: values,
+                            backgroundColor: "#1abc9c",
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0 } },
+                    },
+                },
+            }
+        );
+    }
+
+    // MTTR dos escalados
+    if (mttrCanvas) {
+        let mttr = 0;
+        const resolvedEscalated = escalatedIncidents.filter((inc) => {
+            const statusResolved =
+                inc.status === "Resolvido" || inc.status === "Fechado";
+            const hasDates =
+                (inc.resolvedAt || inc.resolved_at) &&
+                (inc.createdAt || inc.created_at);
+            return statusResolved && hasDates;
+        });
+        if (resolvedEscalated.length > 0) {
+            const totalHours = resolvedEscalated.reduce((sum, inc) => {
+                const created = new Date(inc.createdAt || inc.created_at);
+                const resolved = new Date(inc.resolvedAt || inc.resolved_at);
+                if (isNaN(created) || isNaN(resolved)) return sum;
+                const hours = (resolved - created) / (1000 * 60 * 60);
+                return sum + (hours > 0 ? hours : 0);
+            }, 0);
+            mttr = totalHours / resolvedEscalated.length;
+        }
+
+        createOrUpdateChart(
+            sysadminCharts,
+            "mttr",
+            mttrCanvas,
+            {
+                type: "bar",
+                data: {
+                    labels: ["Escalados"],
+                    datasets: [
+                        {
+                            label: "MTTR (h)",
+                            data: [mttr],
+                            backgroundColor: "#e67e22",
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: { beginAtZero: true },
+                    },
+                },
+            }
+        );
+    }
+
+    // Taxa de resolução geral
+    if (resolvedRateCanvas) {
+        const total = allIncidents.length;
+        const resolved = allIncidents.filter(
+            (inc) => inc.status === "Resolvido"
+        ).length;
+        const rate = total > 0 ? (resolved / total) * 100 : 0;
+
+        createOrUpdateChart(
+            sysadminCharts,
+            "resolvedRate",
+            resolvedRateCanvas,
+            {
+                type: "doughnut",
+                data: {
+                    labels: ["Resolvidos", "Em aberto"],
+                    datasets: [
+                        {
+                            data: [rate, 100 - rate],
+                            backgroundColor: ["#2ecc71", "#95a5a6"],
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                },
+            }
+        );
+    }
 }
 
 // ============================================
@@ -343,6 +787,8 @@ function renderIncidentsTable() {
                 </a>
             </td>
         `;
+        
+        row.dataset.incidentId = incident.id;
 
         tbody.appendChild(row);
     });
@@ -524,4 +970,169 @@ function showNotification(message, type = 'info') {
         notification.style.animation = 'slideOutRight 0.3s ease-out';
         setTimeout(() => notification.remove(), 300);
     }, 3000);
+}
+
+// ============================================
+// Sistema de Comentários
+// ============================================
+
+let selectedIncidentId = null;
+
+// Adicionar evento ao clicar numa linha de incidente
+function setupIncidentRowClick() {
+    const table = document.getElementById('incidentsTableBody');
+    if (!table) return;
+
+    table.addEventListener('click', (e) => {
+        const row = e.target.closest('tr');
+        if (!row) return;
+
+        const incidentId = row.dataset.incidentId;
+        if (incidentId) {
+            selectedIncidentId = parseInt(incidentId);
+            updateSelectedIncidentDisplay(selectedIncidentId);
+            loadComments(selectedIncidentId);
+            showCommentsSection();
+        }
+    });
+}
+
+// Mostrar secção de comentários
+function showCommentsSection() {
+    const section = document.getElementById('commentsSection');
+    if (section) {
+        section.style.display = 'block';
+    }
+}
+
+// Carregar comentários do incidente
+async function loadComments(incidentId) {
+    try {
+        const res = await fetch(`${API_BASE_URL}/incidents/${incidentId}/comments`, {
+            headers: getAuthHeaders()
+        });
+
+        if (!res.ok) {
+            console.error("Erro ao carregar comentários", res.status);
+            return;
+        }
+
+        const comments = await res.json();
+        displayComments(comments);
+    } catch (err) {
+        console.error("Erro ao carregar comentários:", err);
+    }
+}
+
+// Mostrar comentários na UI
+function displayComments(comments) {
+    const commentsList = document.getElementById('commentsList');
+    if (!commentsList) return;
+
+    if (comments.length === 0) {
+        commentsList.innerHTML = '<p style="color: #7f8c8d; font-style: italic; padding: 1rem;">Nenhum comentário ainda. Seja o primeiro!</p>';
+        return;
+    }
+
+    commentsList.innerHTML = comments.map(comment => `
+        <div style="background: #f8f9fa; padding: 1rem; margin-bottom: 0.5rem; border-radius: 4px; border-left: 3px solid #667eea;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                <strong style="color: #2c3e50;">${comment.userName || 'Utilizador Desconhecido'}</strong>
+                <small style="color: #95a5a6;">${formatDate(comment.createdAt)}</small>
+            </div>
+            <p style="color: #34495e; margin: 0; word-wrap: break-word;">${escapeHtml(comment.text)}</p>
+            ${comment.userId === currentUser.id || currentUser.role === 'sysadmin' ? `
+                <button onclick="deleteComment(${selectedIncidentId}, ${comment.id})" style="font-size: 0.85rem; color: #e74c3c; background: none; border: none; cursor: pointer; padding: 0.25rem 0; margin-top: 0.5rem;">
+                    🗑️ Eliminar
+                </button>
+            ` : ''}
+        </div>
+    `).join('');
+}
+
+// Função auxiliar para escapar HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Adicionar novo comentário
+async function addComment(incidentId, text) {
+    try {
+        const res = await fetch(`${API_BASE_URL}/incidents/${incidentId}/comments`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ text })
+        });
+
+        if (!res.ok) {
+            const error = await res.json();
+            showNotification(error.message || "Erro ao adicionar comentário", "error");
+            return false;
+        }
+
+        showNotification("Comentário adicionado com sucesso", "success");
+        await loadComments(incidentId);
+        return true;
+    } catch (err) {
+        console.error("Erro ao adicionar comentário:", err);
+        showNotification("Erro ao adicionar comentário", "error");
+        return false;
+    }
+}
+
+// Eliminar comentário
+async function deleteComment(incidentId, commentId) {
+    if (!confirm("Deseja eliminar este comentário?")) return;
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/incidents/${incidentId}/comments/${commentId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+
+        if (!res.ok) {
+            showNotification("Erro ao eliminar comentário", "error");
+            return;
+        }
+
+        showNotification("Comentário eliminado com sucesso", "success");
+        await loadComments(incidentId);
+    } catch (err) {
+        console.error("Erro ao eliminar comentário:", err);
+        showNotification("Erro ao eliminar comentário", "error");
+    }
+}
+
+// Setup do formulário de comentários
+function setupCommentForm() {
+    const form = document.getElementById('commentForm');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const textarea = document.getElementById('commentText');
+        const text = textarea.value.trim();
+
+        if (!text) {
+            showNotification("Comentário não pode estar vazio", "error");
+            return;
+        }
+
+        if (selectedIncidentId) {
+            const success = await addComment(selectedIncidentId, text);
+            if (success) {
+                textarea.value = '';
+            }
+        }
+    });
+}
+
+// Preencher dados de incidente selecionado na secção de comentários
+function updateSelectedIncidentDisplay(incidentId) {
+    const span = document.getElementById('selectedIncidentId');
+    if (span) {
+        span.textContent = incidentId;
+    }
 }
