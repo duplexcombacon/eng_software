@@ -1,116 +1,51 @@
-# 🚨 Sistema de Gestão de Incidentes Corporativo
+# Sistema de Gestão de Incidentes Corporativo
 
-Um sistema completo de gestão de incidentes desenvolvido em **Node.js**, **Express**, **SQL Server** e **HTML/CSS/JavaScript vanilla**.
+Sistema completo de gestão de incidentes desenvolvido em Node.js, Express, SQL Server e HTML/CSS/JavaScript vanilla.
 
----
+## Índice
 
-## 📋 Índice
+1. Features
+2. Arquitetura
+3. Requisitos
+4. Instalação
+5. Configuração
+6. Uso
+7. Roles e Permissões
+8. API Endpoints
+9. Estrutura do Projeto
 
-- [Features](#features)
-- [Arquitetura](#arquitetura)
-- [Requisitos](#requisitos)
-- [Instalação](#instalação)
-- [Configuração](#configuração)
-- [Como Usar](#como-usar)
-- [Roles e Permissões](#roles-e-permissões)
-- [API Endpoints](#api-endpoints)
-- [Estrutura do Projeto](#estrutura-do-projeto)
+## Features
 
----
+### Implementadas (Sprint 4)
 
-## ✨ Features
+Dashboard com Gráficos (Chart.js). Gráficos de incidentes por prioridade, categoria e status. Evolução do MTTR (Mean Time To Resolution). Responsivos e interativos em todos os tamanhos de ecrã.
 
-### ✅ Implementadas (Sprint 4)
+Sistema de Comentários. Adicionar, visualizar e eliminar comentários nos incidentes. Disponível para todas as roles (Gestor, Técnico, SysAdmin). Timestamps automáticos para cada comentário.
 
-- **Dashboard com Gráficos** (Chart.js)
-  - 📊 Gráficos de incidentes por prioridade, categoria, status
-  - ⏳ Evolução do MTTR (Mean Time To Resolution)
-  - 📈 Responsivos e interativos
+Validações Completas. Validação de email com regex. Comprimento mínimo e máximo de campos. Mensagens de erro específicas. Loading states nos formulários.
 
-- **Sistema de Comentários**
-  - 💬 Adicionar, visualizar e eliminar comentários nos incidentes
-  - 👥 Disponível para todas as roles (Gestor, Técnico, SysAdmin)
-  - ⏱️ Timestamps automáticos
+Autenticação e Autorização. JWT tokens para autenticação. Três roles distintos (Gestor, Técnico, SysAdmin). Permissões por role para acesso a funcionalidades.
 
-- **Validações Completas**
-  - ✔️ Email validation (regex)
-  - ✔️ Comprimento mínimo/máximo de campos
-  - ✔️ Mensagens de erro específicas
-  - ✔️ Loading states nos formulários
+Gestão de Incidentes. Criar, listar e atualizar incidentes. Categorização automática. Níveis de prioridade. Status de resolução.
 
-- **Autenticação e Autorização**
-  - 🔐 JWT tokens
-  - 👤 3 roles distintos: Gestor, Técnico, SysAdmin
-  - 🔒 Permissões por role
+## Arquitetura
 
-- **Gestão de Incidentes**
-  - 📝 Criar, listar, atualizar incidentes
-  - 🏷️ Categorização automática
-  - 🚨 Níveis de prioridade
-  - 📊 Status de resolução
+Três componentes principais: Frontend em HTML/CSS/JavaScript Vanilla, Backend em Node.js com Express (Port 3001), Base de dados em SQL Server com tabelas de Users, Incidents e Comments.
 
----
+## Requisitos
 
-## 🏗️ Arquitetura
+Node.js v14 ou superior. npm (geralmente vem com Node.js). SQL Server 2017 ou superior. Navegador moderno (Chrome, Firefox, Safari ou Edge).
 
-```
-┌─────────────────────────────────────────────────────┐
-│                    Frontend                          │
-│         (HTML/CSS/JavaScript Vanilla)               │
-│   ├─ Login/Autenticação                             │
-│   ├─ 3 Dashboards (Gestor, Técnico, SysAdmin)      │
-│   ├─ Gestão de Incidentes                           │
-│   └─ Sistema de Comentários                         │
-└────────────────┬────────────────────────────────────┘
-                 │ HTTP/REST
-┌────────────────▼────────────────────────────────────┐
-│                  Backend (Node.js)                   │
-│           ├─ Express Server (Port 3001)             │
-│           ├─ Rotas (Auth, Incidents, Metrics)      │
-│           ├─ Middleware (Auth JWT)                  │
-│           └─ Database Connection Pool               │
-└────────────────┬────────────────────────────────────┘
-                 │ ODBC
-┌────────────────▼────────────────────────────────────┐
-│            Database (SQL Server)                     │
-│      ├─ Users (autenticação)                        │
-│      ├─ Incidents (gestão)                          │
-│      └─ Comments (notas)                            │
-└─────────────────────────────────────────────────────┘
-```
+## Instalação
 
----
-
-## 📦 Requisitos
-
-- **Node.js** v14+ 
-- **npm** (geralmente vem com Node.js)
-- **SQL Server** 2017+ (ou Azure SQL)
-- **Navegador moderno** (Chrome, Firefox, Safari, Edge)
-
----
-
-## 🚀 Instalação
-
-### 1. Clonar o repositório
-```bash
+Clonar o repositório:
 git clone https://github.com/duplexcombacon/eng_software.git
 cd eng_software
-```
 
-### 2. Instalar dependências
-```bash
+Instalar dependências:
 npm install
-```
 
-### 3. Configurar variáveis de ambiente
-Copia o arquivo `.env.example` para `.env` e preenche com os teus dados:
-```bash
-cp .env.example .env
-```
-
-Edita `.env` com as credenciais do SQL Server:
-```
+Configurar variáveis de ambiente. Copiar .env.example para .env e preencher com dados:
 PORT=3001
 DB_USER=seu_usuario
 DB_PASS=sua_password
@@ -118,241 +53,88 @@ DB_SERVER=localhost
 DB_NAME=IncidentDB
 JWT_SECRET=uma_chave_secreta_forte
 JWT_EXPIRES=8h
-```
 
-### 4. Configurar Base de Dados
-
-**a) Criar a base de dados (SQL Server):**
-```sql
+Criar base de dados em SQL Server:
 CREATE DATABASE IncidentDB;
 USE IncidentDB;
-```
 
-**b) Executar scripts SQL:**
-- Criar tabelas: Executa o script de schema (com Users, Incidents)
-- Criar tabela de Comments: `COMMENTS_TABLE.sql`
+Executar scripts SQL disponíveis no repositório para criar tabelas de Users, Incidents e Comments.
 
-### 5. Iniciar o servidor
-```bash
+Iniciar o servidor:
 npm start
-```
 
-O servidor vai estar disponível em: `http://localhost:3001`
+O servidor estará disponível em http://localhost:3001
 
----
+## Configuração
 
-## ⚙️ Configuração
+Variáveis de Ambiente necessárias no ficheiro .env:
 
-### Variáveis de Ambiente (.env)
+PORT: Porta do servidor (padrão 3001)
+DB_USER: Utilizador SQL Server
+DB_PASS: Password SQL Server
+DB_SERVER: Endereço do servidor SQL
+DB_NAME: Nome da base de dados
+JWT_SECRET: Chave secreta para JWT
+JWT_EXPIRES: Tempo de expiração do token (padrão 8h)
 
-```
-# Servidor
-PORT=3001
+Os passwords são hasheados com bcrypt. Use a página de registo para criar contas. Apenas admin pode criar novos utilizadores.
 
-# Database
-DB_USER=incident_user
-DB_PASS=Incident123!
-DB_SERVER=localhost
-DB_NAME=IncidentDB
+## Uso
 
-# JWT
-JWT_SECRET=umaCoisaBemSecreta123
-JWT_EXPIRES=8h
-```
+Fazer login em http://localhost:3001/html/index.html com email e password criados.
 
-### Criar Utilizadores (SQL Server)
+Após login, será redirecionado para o dashboard correspondente ao seu role.
 
-```sql
-USE IncidentDB;
+Para criar incidente (apenas Técnico ou SysAdmin): Clicar em "Registar Novo Incidente", preencher campos obrigatórios, clicar em "Registar Incidente".
 
-INSERT INTO Users (name, email, passwordHash, role, title)
-VALUES 
-  ('João Gestor', 'joao@empresa.pt', 'hash_aqui', 'gestor', 'Gestor de Incidentes'),
-  ('Maria Técnico', 'maria@empresa.pt', 'hash_aqui', 'tecnico', 'Técnico de Suporte'),
-  ('Admin SysAdmin', 'admin@empresa.pt', 'hash_aqui', 'sysadmin', 'Administrador');
-```
+Para adicionar comentário: Na tabela de incidentes, clicar numa linha para visualizar detalhes, escrever comentário na secção de comentários, clicar "Enviar".
 
-> **Nota:** Os passwords são hasheados com bcrypt. Use a página de registo para criar contas (apenas admin pode criar).
+Os gráficos aparecem automaticamente no dashboard e mostram estatísticas em tempo real.
 
----
+## Roles e Permissões
 
-## 👥 Roles e Permissões
+Gestor: Ver dashboard, ver gráficos, editar incidente, atribuir técnico, escalar incidente, adicionar comentários, ver métricas.
 
-| Feature | Gestor | Técnico | SysAdmin |
-|---------|--------|---------|----------|
-| Ver Dashboard | ✅ | ✅ | ✅ |
-| Ver Gráficos | ✅ | ✅ | ✅ |
-| Criar Incidente | ❌ | ✅ | ✅ |
-| Editar Incidente | ✅ | ✅ | ✅ |
-| Atribuir Técnico | ✅ | ❌ | ✅ |
-| Escalar Incidente | ✅ | ✅ | ✅ |
-| Adicionar Comentários | ✅ | ✅ | ✅ |
-| Ver Métricas | ✅ | ✅ | ✅ |
+Técnico: Ver dashboard, ver gráficos, criar incidente, editar incidente, escalar incidente, adicionar comentários, ver métricas.
 
----
+SysAdmin: Ver dashboard, ver gráficos, criar incidente, editar incidente, atribuir técnico, escalar incidente, adicionar comentários, ver métricas.
 
-## 🔌 API Endpoints
+## API Endpoints
 
-### Autenticação
-- `POST /api/auth/login` - Login de utilizador
+Autenticação: POST /api/auth/login
 
-### Incidentes
-- `GET /api/incidents` - Listar incidentes
-- `POST /api/incidents` - Criar novo incidente
-- `PATCH /api/incidents/:id` - Atualizar incidente
+Incidentes: GET /api/incidents, POST /api/incidents, PATCH /api/incidents/:id
 
-### Comentários
-- `GET /api/incidents/:id/comments` - Listar comentários
-- `POST /api/incidents/:id/comments` - Adicionar comentário
-- `DELETE /api/incidents/:id/comments/:commentId` - Eliminar comentário
+Comentários: GET /api/incidents/:id/comments, POST /api/incidents/:id/comments, DELETE /api/incidents/:id/comments/:commentId
 
-### Métricas
-- `GET /api/metrics/summary` - Resumo de métricas
+Métricas: GET /api/metrics/summary
 
----
+## Estrutura do Projeto
 
-## 📁 Estrutura do Projeto
+Pasta server contém server.js (entrada), app.js (configuração Express), db.js (conexão SQL), middlewares (auth.js), routes (auth.js, incidents.js, comments.js, metrics.js, alerts.js).
 
-```
-eng_software/
-├── README.md                          # Este arquivo
-├── .env.example                       # Template de variáveis
-├── package.json                       # Dependências Node
-├── COMMENTS_TABLE.sql                 # Script para tabela de comentários
-│
-├── server/
-│   ├── server.js                      # Entrada do servidor
-│   ├── app.js                         # Configuração Express
-│   ├── db.js                          # Conexão SQL Server
-│   ├── generate-hash.js               # Gerador de hashes bcrypt
-│   │
-│   ├── middlewares/
-│   │   └── auth.js                    # Middleware JWT
-│   │
-│   └── routes/
-│       ├── auth.js                    # Rotas de autenticação
-│       ├── incidents.js               # Rotas de incidentes
-│       ├── comments.js                # Rotas de comentários
-│       ├── alerts.js                  # Rotas de alertas
-│       ├── metrics.js                 # Rotas de métricas
-│       └── options.js                 # Rotas de opções
-│
-├── html/
-│   ├── index.html                     # Página de login
-│   ├── static/
-│   │   ├── css/
-│   │   │   ├── style.css              # Estilos globais
-│   │   │   ├── index.css              # Estilos login
-│   │   │   └── dashboard.css          # Estilos dashboards
-│   │   └── js/
-│   │       ├── main.js                # Funções globais
-│   │       ├── api.js                 # Client API
-│   │       ├── dashboard.js           # Lógica dashboards
-│   │       └── options.js             # Opções dinâmicas
-│   │
-│   └── templates/
-│       ├── register.html              # Registo de utilizadores
-│       ├── dashboard-gestor.html      # Dashboard Gestor
-│       ├── dashboard-tecnico.html     # Dashboard Técnico
-│       ├── dashboard-sysadmin.html    # Dashboard SysAdmin
-│       ├── incident-new.html          # Criar novo incidente
-│       └── [outros templates]
-│
-└── data/
-    ├── users.json                     # Dados de exemplo
-    └── incidents.json                 # Dados de exemplo
-```
+Pasta html contém index.html (login), static (css e js), templates (dashboards e formulários).
 
----
+Pasta data contém ficheiros JSON de exemplo (users.json, incidents.json).
 
-## 🚀 Como Usar
+## Notas Importantes
 
-### 1. Fazer Login
-- Acede a `http://localhost:3001/html/index.html`
-- Email: `joao@empresa.pt` (ou outro utilizador)
-- Password: (conforme criado)
+Nunca fazer commit de .env com dados sensíveis. Sempre validar dados no frontend e backend. Tokens JWT expiram em 8h por padrão. Passwords são hasheados com bcrypt e nunca armazenados em texto plano.
 
-### 2. Ver Dashboard
-- Após login, serás redirecionado para o dashboard correspondente ao teu role
+## Troubleshooting
 
-### 3. Criar um Incidente (se és Técnico)
-- Clica em "Registar Novo Incidente"
-- Preenche os campos obrigatórios
-- Clica "Registar Incidente"
+Se faltar módulo mssql, executar: npm install mssql
 
-### 4. Adicionar Comentário
-- Na tabela de incidentes, clica numa linha
-- Aparece a secção de comentários
-- Escreve um comentário e clica "Enviar"
+Se houver erro na ligação à BD, verificar credenciais em .env, confirmar que SQL Server está ligado, testar conexão com SQL Server Management Studio.
 
-### 5. Ver Gráficos
-- Os gráficos aparecem automaticamente no dashboard
-- Mostram estatísticas em tempo real
+Se erro ao fazer login, confirmar que utilizador existe na BD, verificar se JWT_SECRET está igual em .env.
 
----
+## Desenvolvimento
 
-## 🧪 Testes
+Para adicionar nova rota: Criar ficheiro em server/routes/minha-rota.js, importar em server/app.js, adicionar middleware de autenticação se necessário.
 
-Para executar testes (quando implementados):
-```bash
-npm test
-```
+Para adicionar novo dashboard: Criar ficheiro em html/templates/dashboard-novo.html, adicionar scripts necessários (main.js, dashboard.js), validar permissões no JavaScript.
 
----
+## Última atualização
 
-## 📝 Notas Importantes
-
-- ⚠️ **Nunca** commit `.env` com dados sensíveis
-- ⚠️ **Sempre** valida dados no frontend E backend
-- ⚠️ **Tokens JWT** expiram em 8h por padrão
-- ⚠️ **Passwords** são hasheadas com bcrypt (nunca armazenar plain text)
-
----
-
-## 🐛 Troubleshooting
-
-### "Cannot find module 'mssql'"
-```bash
-npm install mssql
-```
-
-### "Erro na ligação à BD"
-- Verifica `.env` (credenciais corretas?)
-- Confirma que SQL Server está ligado
-- Testa conexão com SQL Server Management Studio
-
-### "Erro ao fazer login"
-- Confirma que o utilizador existe na BD
-- Verifica se o JWT_SECRET está igual no `.env`
-
----
-
-## 👨‍💻 Desenvolvimento
-
-### Para adicionar uma nova rota:
-1. Cria ficheiro em `server/routes/minha-rota.js`
-2. Importa em `server/app.js`
-3. Adiciona middleware de autenticação se necessário
-
-### Para adicionar um novo dashboard:
-1. Cria `html/templates/dashboard-novo.html`
-2. Adiciona scripts necessários (main.js, dashboard.js)
-3. Valida permissões no JavaScript
-
----
-
-## 📄 Licença
-
-Este projeto é propriedade da empresa. Uso interno apenas.
-
----
-
-## 📞 Suporte
-
-Para dúvidas ou problemas, contacta o administrador do sistema.
-
----
-
-**Última atualização:** Dezembro 2025  
-**Versão:** 1.0.0  
-**Status:** Em desenvolvimento (Sprint 4)
+Dezembro 2025. Versão 1.0.0. Status: Em desenvolvimento (Sprint 4).

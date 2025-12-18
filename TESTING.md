@@ -1,169 +1,66 @@
-# 🔐 Guia de Testes - Sistema de Gestão de Incidentes
+# Guia de Testes
 
-## 📋 Credenciais de Login (Temporary Local Database)
+## Credenciais de Login
 
-### 1️⃣ João Almeida - Gestor de IT (Administrator)
-- **Email:** `joao.almeida@empresa.pt`
-- **Senha:** `senha123`
-- **Rol:** `gestor`
-- **Acesso:** Dashboard com Relatórios e Métricas (MTTR, incidentes por tipo/categoria)
+Utilizador: João Almeida - Gestor de IT
+Email: joao.almeida@empresa.pt
+Senha: senha123
+Rol: gestor
+Acesso: Dashboard com Relatórios e Métricas (MTTR, incidentes por tipo e categoria)
 
-### 2️⃣ Marta Ferreira - Técnica de Suporte (Helpdesk Nível 1)
-- **Email:** `marta.ferreira@empresa.pt`
-- **Senha:** `senha123`
-- **Rol:** `tecnico`
-- **Acesso:** Dashboard para registar e categorizar novos incidentes
+Utilizador: Marta Ferreira - Técnica de Suporte
+Email: marta.ferreira@empresa.pt
+Senha: senha123
+Rol: tecnico
+Acesso: Dashboard para registar e categorizar novos incidentes
 
-### 3️⃣ Carlos Pinto - Administrador de Sistemas (SysAdmin)
-- **Email:** `carlos.pinto@empresa.pt`
-- **Senha:** `senha123`
-- **Rol:** `sysadmin`
-- **Acesso:** Dashboard com alertas de infraestrutura e incidentes críticos
+Utilizador: Carlos Pinto - Administrador de Sistemas
+Email: carlos.pinto@empresa.pt
+Senha: senha123
+Rol: sysadmin
+Acesso: Dashboard com alertas de infraestrutura e incidentes críticos
 
----
+## Base de Dados Temporária
 
-## 📁 Base de Dados Temporária
+Localização: data/ (pasta do projeto)
 
-### Localização:
-```
-c:\Users\rodri\OneDrive\Documentos\GitHub\eng_software\
-├── data/
-│   ├── users.json          # Utilizadores com credenciais
-│   └── incidents.json      # Incidentes e métricas simuladas
-```
+users.json contém 3 utilizadores de teste com informações pessoais e roles distintos.
 
-### Dados Disponíveis:
+incidents.json contém 6 incidentes de teste em vários estados (Aberto, Em Progresso, Escalado, Resolvido) com categorias variadas (Email, Hardware, Software, Infraestrutura, Redes) e métricas de MTTR, prioridades, status e impacto de utilizadores.
 
-#### **users.json**
-- 3 utilizadores de teste
-- Informações pessoais (nome, idade, objetivo, frustração)
-- Roles distintos para cada persona
+## Cenários de Teste
 
-#### **incidents.json**
-- 6 incidentes de teste (Aberto, Em Progresso, Escalado, Resolvido)
-- Categorias: Email, Hardware, Software, Infraestrutura, Redes
-- Métricas de MTTR, prioridades, status, impacto de utilizadores
+Cenário 1: João (Gestor) - Reunião de Segunda-Feira
+Fazer login como joao.almeida@empresa.pt
+Verificar dashboard com métrica MTTR igual a 2.5 horas, incidentes por categoria, prioridades críticas destacadas e filtros por período.
 
----
+Cenário 2: Marta (Técnico) - O Telefone Toca
+Fazer login como marta.ferreira@empresa.pt
+Clicar em Novo Incidente
+Preencher: Título (CRM Lento), Categoria (Software/CRM), Prioridade (Alta), Impacto (15 utilizadores)
 
-## 🧪 Cenários de Teste
+Cenário 3: Carlos (SysAdmin) - Alerta Crítico na Infraestrutura
+Fazer login como carlos.pinto@empresa.pt
+Verificar dashboard com alertas críticos de infraestrutura, incidentes escalados e servidor BD com CPU 100%
 
-### Cenário 1: João (Gestor) - "A Reunião de Segunda-Feira"
-1. Fazer login como `joao.almeida@empresa.pt`
-2. Verificar dashboard com:
-   - ✅ Métrica MTTR = 2.5 horas
-   - ✅ Incidentes por categoria
-   - ✅ Prioridades críticas destacadas
-   - ✅ Filtros por período
+## Armazenamento Local (localStorage)
 
-### Cenário 2: Marta (Técnico) - "O Telefone Toca"
-1. Fazer login como `marta.ferreira@empresa.pt`
-2. Clicar em "Novo Incidente"
-3. Preencher:
-   - Título: "CRM Lento"
-   - Categoria: "Software/CRM"
-   - Prioridade: "Alta"
-   - Impacto: 15 utilizadores
+Após login bem-sucedido, os dados são armazenados em localStorage com currentUser e userEmail (se "Lembrar-me" for marcado).
 
-### Cenário 3: Carlos (SysAdmin) - "Alerta Crítico na Infraestrutura"
-1. Fazer login como `carlos.pinto@empresa.pt`
-2. Ver dashboard com:
-   - ✅ Alertas críticos de infraestrutura
-   - ✅ Incidentes escalados
-   - ✅ Servidor BD com CPU 100%
+## Funções Disponíveis
 
----
+Autenticação: getCurrentUser(), logout(), requireAuth(), hasRole(), hasAnyRole()
 
-## 🔄 Armazenamento Local (localStorage)
+Dados: loadUsers(), loadIncidents()
 
-Após login bem-sucedido:
-```json
-{
-  "currentUser": {
-    "id": 1,
-    "name": "João Almeida",
-    "email": "joao.almeida@empresa.pt",
-    "role": "gestor",
-    "title": "Gestor de IT (Administrator)"
-  },
-  "userEmail": "joao.almeida@empresa.pt"  // Se "Lembrar-me" marcado
-}
-```
+Utilitários: formatDate(), getPriorityColor(), getStatusColor(), formatUserName(), getTimeAgo()
 
----
+## Estrutura de Pastas
 
-## 📝 Funções Disponíveis (main.js)
+Pasta html contém index.html (Login), pasta static com css e js, pasta templates com dashboards e formulários.
 
-### Autenticação:
-```javascript
-getCurrentUser()          // Retorna dados do utilizador autenticado
-logout()                  // Faz logout
-requireAuth()             // Força autenticação
-hasRole('gestor')         // Verifica se tem rol específico
-hasAnyRole(['gestor', 'sysadmin'])  // Verifica múltiplos roles
-```
+Pasta data contém users.json e incidents.json.
 
-### Dados:
-```javascript
-loadUsers()               // Carrega lista de utilizadores
-loadIncidents()           // Carrega incidentes e métricas
-```
+## Nota Importante
 
-### Utilitários:
-```javascript
-formatDate(dateStr)       // Formata data para PT
-getPriorityColor(priority) // Retorna cor CSS da prioridade
-getStatusColor(status)    // Retorna cor CSS do status
-formatUserName(name, role) // Formata nome com rol
-getTimeAgo(dateStr)       // Calcula "X dias atrás"
-```
-
----
-
-## 🚀 Próximos Passos
-
-### Frontend:
-- [ ] Criar dashboard para cada rol (gestor, tecnico, sysadmin)
-- [ ] Implementar formulário de novo incidente
-- [ ] Criar página de listar incidentes
-- [ ] Implementar filtros e buscas
-
-### Backend (Firebase):
-- [ ] Configurar Firestore
-- [ ] Implementar endpoints REST
-- [ ] Migrar de localStorage para Firestore
-
----
-
-## ⚙️ Estrutura de Pastas
-
-```
-eng_software/
-├── html/
-│   ├── index.html                  (Login)
-│   ├── static/
-│   │   ├── css/
-│   │   │   ├── style.css          (Estilos globais)
-│   │   │   ├── index.css          (Estilos do login)
-│   │   │   ├── dashboard.css      (Estilos dashboard - criar)
-│   │   │   └── register.css       (Estilos registo - criar)
-│   │   └── js/
-│   │       ├── main.js            (Funções globais)
-│   │       └── dashboard.js       (Lógica dashboard - criar)
-│   └── templates/
-│       ├── dashboard.html         (Dashboard genérico - adaptar)
-│       ├── incident-list.html     (Lista incidentes - criar)
-│       └── register-incident.html (Novo incidente - criar)
-├── data/
-│   ├── users.json                 (Utilizadores locais)
-│   └── incidents.json             (Incidentes locais)
-└── README.md
-```
-
----
-
-## 📞 Suporte
-
-**Nota:** Esta é uma base de dados **temporária em JSON**. Será substituída por **Firebase Firestore** quando estivermos prontos.
-
-Para resetar dados, basta eliminar `localStorage` no DevTools (F12 > Application > Storage).
+Esta é uma base de dados temporária em JSON que será substituída por Firebase Firestore. Para resetar dados, eliminar localStorage no DevTools (F12 > Application > Storage).

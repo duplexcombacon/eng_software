@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 
+
 const passwords = [
   { name: "Gestor", pass: "Gestor123!" },
   { name: "Tecnico", pass: "Tecnico123!" },

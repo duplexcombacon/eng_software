@@ -1,22 +1,11 @@
 #!/bin/bash
 #
-# Script de Notificação Nagios para Integração com Sistema de Gestão de Incidentes
-# 
-# Uso: notify-incident.sh <host> <service> <status> <output>
-#
-# Este script converte alertas do Nagios em chamadas HTTP para o vosso sistema
-# criando incidentes automaticamente
-#
-# Instalação:
-# 1. Copiar para: /usr/local/nagios/libexec/notify-incident.sh
-# 2. chmod +x /usr/local/nagios/libexec/notify-incident.sh
-# 3. Configurar em Nagios:
-#    - Definir contact notification command
-#    - Testar com: service nagios4 restart
-#
+# NÃO IMPLEMENTADO!!
+# motivo acabamos por não implementar o nagios pois tínhamos pontos mais importantes
+# para focar no tempo disponível. Para engenharia de Software, decidimos focar em outras áreas
 
 # Configurações
-SISTEMA_URL="http://localhost:3001/api/nagios/webhook"  # Mudar para URL real
+SISTEMA_URL="http://localhost:3001/api/nagios/webhook" 
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
 # Parâmetros
